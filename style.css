@@ -62,6 +62,17 @@ body {
     filter: invert(1) brightness(2);
 }
 
+/* Icône rouge uniquement pour les boutons icon-btn btn-danger qui sont aussi secondary (fond transparent) */
+.icon-btn.btn-danger.secondary img {
+    filter: none !important;
+    color: var(--danger-red) !important;
+    fill: var(--danger-red) !important;
+}
+.icon-btn.btn-danger.secondary:hover img {
+    color: #fff !important;
+    fill: #fff !important;
+}
+
 .player-dropdown {
     position: relative;
 }
@@ -171,6 +182,15 @@ body {
     transition: left 0.5s ease;
     z-index: 2;
 }
+.progress-bubble.arrival {
+    background-color: #07a240 !important; /* vert vif */
+    border-color: #E1ED76 !important;
+    color: #fff !important;
+    box-shadow: 0 0 4px 4px rgba(225,237,118,0.5), 0 0 4px 4px rgba(225,237,118,0.5);
+    filter: drop-shadow(0 0 8px #22c55e);
+    animation: arrival-glow 1.2s ease-in-out infinite alternate;
+}
+
 .progress-arrival-flag {
     position: absolute;
     right: 3px;
@@ -249,10 +269,14 @@ body {
     align-items: center;
     justify-content: space-around;
     padding: 8px;
+    position: relative;
+    z-index: 2;
 }
 .card-placeholder {
     border: 2px dashed var(--card-placeholder-border);
     background: var(--card-placeholder-bg);
+    position: relative;
+    z-index: 1;
 }
 .card-track .card:not(:first-child),
 .card-track .card-placeholder:not(:first-child) {
@@ -359,6 +383,77 @@ body {
 .btn-danger:hover {
     background: var(--danger-red-hover);
     color: #fff;
+}
+
+/* Harmonisation des styles d'alerte/danger pour tous les boutons critiques */
+.btn-danger,
+.btn-alert,
+#confirm-reset-btn,
+.modal-btn.alert {
+    background: var(--danger-red) !important;
+    color: var(--text-light) !important;
+    border: 2px solid var(--danger-red-hover) !important;
+    border-radius: 8px !important;
+    font-weight: bold !important;
+    transition: background 0.2s, color 0.2s !important;
+}
+.btn-danger:hover,icon-btn btn-danger
+.btn-alert:hover,
+#confirm-reset-btn:hover,
+.modal-btn.alert:hover {
+    background: var(--danger-red-hover) !important;
+    color: #fff !important;
+}
+
+/* Forcer le style d'alerte sur le bouton de confirmation de reset même si la classe n'est pas présente */
+#confirm-reset-btn {
+    background: var(--danger-red) !important;
+    color: var(--text-light) !important;
+    border: 2px solid var(--danger-red-hover) !important;
+    border-radius: 8px !important;
+    font-weight: bold !important;
+    transition: background 0.2s, color 0.2s !important;
+}
+#confirm-reset-btn:hover {
+    background: var(--danger-red-hover) !important;
+    color: #fff !important;
+}
+
+/* Danger secondaire : fond transparent, texte et icône couleur border, contour rouge, hover fond rouge/texte blanc */
+#reset-btn {
+    background: transparent !important;
+    color: var(--danger-red) !important;
+    border: 2px solid var(--danger-red) !important;
+    border-radius: 8px !important;
+    font-weight: bold !important;
+    transition: background 0.2s, color 0.2s !important;
+}
+#reset-btn img {
+    filter: none !important;
+    color: var(--danger-red) !important;
+    /* Pour SVG inline : */
+    fill: var(--danger-red) !important;
+}
+#reset-btn:hover {
+    background: var(--danger-red) !important;
+    color: #fff !important;
+    border-color: var(--danger-red-hover) !important;
+}
+#reset-btn:hover img {
+    color: #fff !important;
+    fill: #fff !important;
+    filter: none !important;
+}
+
+/* Correction : l'icône du bouton reset doit devenir blanche au hover, pas noire */
+#reset-btn.secondary svg {
+    color: var(--danger-red);
+    fill: var(--danger-red);
+    transition: color 0.2s, fill 0.2s;
+}
+#reset-btn.secondary:hover svg {
+    color: #fff;
+    fill: #fff;
 }
 
 /* Masquer les placeholders au-delà du 2ème pour la ligne 200 */

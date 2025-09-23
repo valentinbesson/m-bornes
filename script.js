@@ -26,6 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalBackdrop = document.getElementById('modal-backdrop');
     const modalContent = document.getElementById('modal-content');
     const resetButton = document.getElementById('reset-btn');
+    // Ajout de la classe secondary pour le danger secondaire
+    resetButton.classList.add('secondary');
 
     // --- INITIALIZATION ---
     function createPlayer(id) {
@@ -56,6 +58,26 @@ document.addEventListener('DOMContentLoaded', () => {
         progressBubble.textContent = player.score;
         progressBubble.style.borderColor = player.isWinner ? '#4CAF50' : 'white';
 
+        // Ajout/Retrait de la classe d'arrivée (vert + glow)
+        if (player.isWinner) {
+            progressBubble.classList.add('arrival');
+            // Confettis à l'arrivée (une seule fois)
+            if (!progressBubble._confettiDone) {
+                if (window.confetti) {
+                    window.confetti({
+                        particleCount: 120,
+                        spread: 90,
+                        origin: { y: 0.5 },
+                        zIndex: 9999
+                    });
+                }
+                progressBubble._confettiDone = true;
+            }
+        } else {
+            progressBubble.classList.remove('arrival');
+            progressBubble._confettiDone = false;
+        }
+
         // Update Game Board for the current player
         gameBoard.innerHTML = '';
         CARD_DATA.forEach(cardInfo => {
@@ -64,18 +86,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const row = document.createElement('div');
             row.className = 'card-row';
+
+            // Générer 10 emplacements (cartes ou placeholders)
+            let cardsHtml = '';
+            for (let i = 0; i < 10; i++) {
+                if (i < cardCount) {
+                    cardsHtml += `
+                        <div class="card">
+                            <img src="assets/images/km-${cardInfo.km}.svg" class="km-value" alt="${cardInfo.km}">
+                            <img src="assets/images/${cardInfo.animal}" class="animal" alt="${cardInfo.animal}">
+                        </div>
+                    `;
+                } else {
+                    cardsHtml += '<div class="card-placeholder"></div>';
+                }
+            }
+
             row.innerHTML = `
                 <button class="card-row-btn" data-action="remove" data-km="${cardInfo.km}" ${cardCount === 0 ? 'disabled' : ''}>-</button>
                 <div class="card-track">
-                    ${cardCount > 0 
-                        ? Array.from({ length: cardCount }).map(() => `
-                            <div class="card">
-                                <img src="assets/images/km-${cardInfo.km}.svg" class="km-value" alt="${cardInfo.km}">
-                                <img src="assets/images/${cardInfo.animal}" class="animal" alt="${cardInfo.animal}">
-                            </div>
-                          `).join('')
-                        : '<div class="card-placeholder"></div>'
-                    }
+                    ${cardsHtml}
                 </div>
                 <div class="controls">
                     <span class="count">${cardCount}</span>
@@ -206,4 +236,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- START ---
     initGame();
+
+    // Injection dynamique du script confetti si absent
+    if (!window.confetti) {
+        const confettiScript = document.createElement('script');
+        confettiScript.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js';
+        confettiScript.async = true;
+        document.head.appendChild(confettiScript);
+    }
 });
