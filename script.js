@@ -43,7 +43,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function initGame() {
-        players = Array.from({ length: 4 }, (_, i) => createPlayer(i + 1));
+        loadSettings();
+        if (!players.length) {
+            players = Array.from({ length: 4 }, (_, i) => createPlayer(i + 1));
+        }
         currentPlayerIndex = 0;
         updateUI();
     }
@@ -141,6 +144,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 player.score += km;
                 player.cards[km]++;
                 if (player.score === 1000) player.isWinner = true;
+                // Passe au joueur suivant après ajout de carte avec un délai de 2 secondes
+                if (playerCount > 1) {
+                    setTimeout(() => {
+                        currentPlayerIndex = (currentPlayerIndex + 1) % playerCount;
+                        updateUI();
+                    }, 2000);
+                    updateUI(); // Affiche d'abord la carte ajoutée
+                    return; // Empêche updateUI() d'être appelé deux fois
+                }
             }
         } else if (action === 'remove') {
             if (player.cards[km] > 0) {
@@ -164,13 +176,36 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentPlayerIndex >= count) {
             currentPlayerIndex = count - 1;
         }
-        showPlayerNameModal(); // On restaure l'ouverture du modal
+        showPlayerNameModal();
+        saveSettings(); // Sauvegarde le nombre de joueurs
+    }
+
+    // --- LOCAL STORAGE ---
+    function saveSettings() {
+        const settings = {
+            playerCount,
+            playerNames: players.map(p => p.name)
+        };
+        localStorage.setItem('mbornes-settings', JSON.stringify(settings));
+    }
+    function loadSettings() {
+        const settings = JSON.parse(localStorage.getItem('mbornes-settings'));
+        if (settings) {
+            playerCount = settings.playerCount;
+            players = Array.from({ length: 4 }, (_, i) => createPlayer(i + 1));
+            for (let i = 0; i < playerCount; i++) {
+                players[i].name = settings.playerNames[i] || `Joueur ${i + 1}`;
+            }
+        }
     }
 
     // --- MODAL LOGIC ---
     function showPlayerNameModal() {
         modalContent.innerHTML = `
-            <h3>Noms des joueurs</h3>
+            <h3 style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                <span>Noms des joueurs</span>
+                <button id="reset-names-btn" title="Réinitialiser les noms" style="font-size:13px;padding:4px 10px;border-radius:6px;border:1px solid #D1D5DB;background:#F3F4F6;cursor:pointer;">Reset</button>
+            </h3>
             <div class="player-name-inputs">
                 ${Array.from({ length: playerCount }, (_, i) => `
                     <input type="text" id="player-name-${i}" placeholder="Joueur ${i + 1}" value="${players[i].name}">
@@ -181,6 +216,28 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
         modalBackdrop.style.display = 'flex';
+        // Ajout : vider le champ si la valeur est la valeur par défaut au focus ou au clic
+        setTimeout(() => {
+            const inputs = modalContent.querySelectorAll('.player-name-inputs input');
+            inputs.forEach((input, i) => {
+                function clearIfDefault() {
+                    if (this.value === `Joueur ${i + 1}`) {
+                        this.value = '';
+                    }
+                }
+                input.addEventListener('focus', clearIfDefault);
+                input.addEventListener('click', clearIfDefault);
+            });
+            // Ajout du bouton reset noms
+            const resetBtn = document.getElementById('reset-names-btn');
+            if (resetBtn) {
+                resetBtn.onclick = () => {
+                    inputs.forEach((input, i) => {
+                        input.value = `Joueur ${i + 1}`;
+                    });
+                };
+            }
+        }, 0);
         document.getElementById('save-names-btn').onclick = () => {
             for (let i = 0; i < playerCount; i++) {
                 const input = document.getElementById(`player-name-${i}`);
@@ -188,6 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             modalBackdrop.style.display = 'none';
             updateUI();
+            saveSettings(); // Sauvegarde les noms
         };
     }
     
@@ -202,10 +260,19 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         modalBackdrop.style.display = 'flex';
         document.getElementById('confirm-reset-btn').onclick = () => {
-            initGame();
-            setPlayerCount(1);
-            playerCountText.textContent = '1 joueur';
+            // On conserve le nombre de joueurs ET les noms
+            const count = playerCount;
+            const names = players.map(p => p.name);
+            players = Array.from({ length: 4 }, (_, i) => createPlayer(i + 1));
+            for (let i = 0; i < count; i++) {
+                players[i].name = names[i] || `Joueur ${i + 1}`;
+            }
+            currentPlayerIndex = 0;
+            playerCount = count;
+            playerCountText.textContent = `${count} joueur${count > 1 ? 's' : ''}`;
             modalBackdrop.style.display = 'none';
+            localStorage.removeItem('mbornes-settings');
+            updateUI();
         };
         document.getElementById('cancel-reset-btn').onclick = () => modalBackdrop.style.display = 'none';
     }

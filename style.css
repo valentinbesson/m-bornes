@@ -78,11 +78,11 @@ body {
 }
 
 .player-dropdown-button {
-    background: var(--primary-blue);
-    border: none;
+    background: none;
+    border: 1px solid var(--primary-blue);
     border-radius: 8px;
     padding: 8px 16px;
-    color: var(--text-light);
+    color: var(--primary-blue);
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
@@ -95,9 +95,12 @@ body {
     background-color: var(--primary-blue-hover);
 }
 .player-dropdown-button img {
-    width: 22px;
-    height: 22px;
-    filter: invert(1) brightness(2);
+    width: 23px;
+    height: 23px;
+    fill: var(--primary-blue) !important;
+}
+.player-dropdown-button:hover img {
+    fill: var(--primary-blue-hover) !important;
 }
 .player-dropdown-content {
     display: none;
@@ -137,13 +140,13 @@ body {
 /* --- Progress Bar --- */
 .progress-section {
     padding: 16px;
-    margin: 3px 30px;
+    margin: 3px 10px 3px 30px;
     flex-shrink: 0;
 }
 .progress-track {
     background-color: #4B5563;
     height: 30px;
-    border-radius: 5px;
+    border-radius: 8px;
     position: relative;
 }
 .progress-track::after {
@@ -204,8 +207,9 @@ body {
 .game-board {
     flex: 1; /* C'est la clé du responsive en hauteur */
     background-color: var(--bg-board);
-    border-radius: 24px 24px 0 0;
+    border-radius: 24px 24px 12px 12px ;
     padding: 16px;
+    margin: 0px 10px 40px 10px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -282,8 +286,8 @@ body {
 .card-track .card-placeholder:not(:first-child) {
     margin-right: calc(-1 * min(40px, 4vw));
 }
-.card img.km-value { height: 24px; }
-.card img.animal { width: 32px; height: 32px; }
+.card img.km-value { height: 30px; }
+.card img.animal { width: 40px; height: 40px; }
 
 .controls {
     display: flex;
@@ -305,27 +309,28 @@ body {
 .player-nav {
     display: none; /* Caché par défaut, activé par JS */
     flex-shrink: 0;
-    background-color: var(--card-bg);
-    padding: 8px 16px;
+    background-color: var(--bg-dark);
+    padding: 3px 20px;
     justify-content: space-between;
     align-items: center;
 }
 .nav-arrow {
     background: #E5E7EB;
-    border: none;
+    border: var(--primary-blue);
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
+    width: 30px;
+    height: 30px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
 }
-.nav-arrow:disabled { background-color: #F3F4F6; cursor: not-allowed; }
-.nav-arrow img { width: 20px; height: 20px; }
+.nav-arrow:disabled { background-color: none; cursor: not-allowed; }
+.nav-arrow img { width: 20px; height: 20px; fill:#1D4ED8}
 .current-player-info {
-    color: var(--text-dark);
-    font-weight: 500;
+    color: var(--bg-board);
+    font-size: 24px;
+    font-weight: 600;
 }
 
 /* --- Modal --- */
@@ -423,7 +428,7 @@ body {
 #reset-btn {
     background: transparent !important;
     color: var(--danger-red) !important;
-    border: 2px solid var(--danger-red) !important;
+    border: 1px solid var(--danger-red) !important;
     border-radius: 8px !important;
     font-weight: bold !important;
     transition: background 0.2s, color 0.2s !important;
@@ -431,6 +436,8 @@ body {
 #reset-btn img {
     filter: none !important;
     color: var(--danger-red) !important;
+    width: 20px;
+    height: 20px;
     /* Pour SVG inline : */
     fill: var(--danger-red) !important;
 }
@@ -452,8 +459,8 @@ body {
     transition: color 0.2s, fill 0.2s;
 }
 #reset-btn.secondary:hover svg {
-    color: #fff;
-    fill: #fff;
+    color: #000;
+    fill: #OOO;
 }
 
 /* Masquer les placeholders au-delà du 2ème pour la ligne 200 */
