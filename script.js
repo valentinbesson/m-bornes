@@ -89,8 +89,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (playerCount > 1) {
             playerNav.style.display = 'flex';
             currentPlayerInfo.textContent = player.name;
-            prevPlayerBtn.disabled = currentPlayerIndex === 0;
-            nextPlayerBtn.disabled = currentPlayerIndex === playerCount - 1;
+            prevPlayerBtn.disabled = false;
+            nextPlayerBtn.disabled = false;
         } else {
             playerNav.style.display = 'none';
         }
@@ -124,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- PLAYER MANAGEMENT ---
     function changePlayer(direction) {
-        currentPlayerIndex = Math.max(0, Math.min(playerCount - 1, currentPlayerIndex + direction));
+        currentPlayerIndex = (currentPlayerIndex + direction + playerCount) % playerCount;
         updateUI();
     }
 
@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentPlayerIndex >= count) {
             currentPlayerIndex = count - 1;
         }
-        showPlayerNameModal();
+        showPlayerNameModal(); // On restaure l'ouverture du modal
     }
 
     // --- MODAL LOGIC ---
@@ -189,7 +189,18 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         if (e.target.tagName === 'A') {
             setPlayerCount(parseInt(e.target.dataset.players));
-            dropdown.blur(); // Referme le menu
+            dropdown.classList.remove('open'); // Ferme le menu
+        }
+    });
+    // Ajout : ouverture/fermeture du menu au clic
+    document.getElementById('player-dropdown-button').addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdown.classList.toggle('open');
+    });
+    // Ferme le menu si clic ailleurs
+    document.addEventListener('click', (e) => {
+        if (!dropdown.contains(e.target)) {
+            dropdown.classList.remove('open');
         }
     });
 
