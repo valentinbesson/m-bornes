@@ -252,7 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function showResetModal() {
         modalContent.innerHTML = `
             <h3>Recommencer ?</h3>
-            <p>Cela remettra tous les scores et noms à zéro.</p>
+            <p>Cela remettra tous les scores à zéro.</p>
             <div class="modal-buttons">
                 <button id="cancel-reset-btn" class="modal-btn">Annuler</button>
                 <button id="confirm-reset-btn" class="modal-btn primary">Reset</button>
