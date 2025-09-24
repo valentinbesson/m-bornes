@@ -4,6 +4,7 @@
     --primary-blue: #2563EB;
     --primary-blue-hover: #1D4ED8;
     --card-bg: #FFFFFF;
+    --card-bg2: #ebf4fe;
     --card-placeholder-bg: #E1ED76;
     --card-placeholder-border: rgba(36, 136, 102, 0.25);
     --text-light: #FFFFFF;
@@ -211,7 +212,7 @@ body {
     background-color: var(--bg-board);
     border-radius: 24px 24px 12px 12px ;
     padding: 16px;
-    margin: 0px 10px 40px 10px;
+    margin: 0px 10px 50px 10px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -269,8 +270,8 @@ body {
 }
 .card,
 .card-placeholder {
-    min-width: 60px;
-    max-width: 120px;
+    /* min-width: 60px; */
+    /* max-width: 120px; */
     width: 100%;
     height: 60px;
     border-radius: 8px;
@@ -279,13 +280,13 @@ body {
     position: relative;
 }
 .card {
-    background-color: var(--card-bg);
+    background-color: var(--card-bg2);
     border: 4px solid var(--card-bg);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 3px 2px 4px rgba(0,0,0,0.2);
     display: flex;
     align-items: center;
     justify-content: space-around;
-    padding: 8px;
+    padding: 3px;
     position: relative;
     z-index: 2;
 }
@@ -294,6 +295,20 @@ body {
     background: var(--card-placeholder-bg);
     position: relative;
     z-index: 1;
+    /* Ajout pour SVG de vitesse en fond */
+    overflow: hidden;
+}
+.card-placeholder img.km-bg {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 48px;
+    height: 48px;
+    transform: translate(-50%, -50%);
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 0;
+    user-select: none;
 }
 .card-track .card:not(:first-child),
 .card-track .card-placeholder:not(:first-child) {
@@ -305,7 +320,7 @@ body {
 .controls {
     display: flex;
     align-items: center;
-    background: none);
+    background: none;
     border-radius: 12px;
     padding: 4px;
     flex-shrink: 0;
@@ -314,6 +329,7 @@ body {
     color: var(--text-dark);
     font-weight: bold;
     font-size: 25px;
+    padding-right: 10px;
     color: var(--text-dark);
     min-width: 40px;
     text-align: center;

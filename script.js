@@ -101,7 +101,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     `;
                 } else {
-                    cardsHtml += '<div class="card-placeholder"></div>';
+                    // Utilise le SVG du répertoire distance
+                    cardsHtml += `<div class="card-placeholder"><img class="km-bg" src="assets/distance/distance-${cardInfo.km}.svg" alt="${cardInfo.km} km"></div>`;
                 }
             }
 
