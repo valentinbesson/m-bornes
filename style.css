@@ -185,8 +185,12 @@ body {
     font-size: 20px;
     font-weight: bold;
     color: var(--text-light);
+    /* Par défaut, transition animée */
     transition: left 0.5s ease;
     z-index: 2;
+}
+.progress-bubble.no-anim {
+    transition: none !important;
 }
 .progress-bubble.arrival {
     background-color: #07a240 !important; /* vert vif */
@@ -368,10 +372,10 @@ body {
 .nav-arrow {
     background: var(--primary-blue);
     border: var(--primary-blue);
-    opacity: 0.6;
+    opacity: 0.9;
     border-radius: 20%;
-    width: 30px;
-    height: 30px;
+    width: 35px;
+    height: 35px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -524,21 +528,17 @@ body {
 .game-board,
 .player-nav,
 .progress-section {
-    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); /* courbe fluide, sans rebond */
-    will-change: transform;
+    transition: none !important;
+    will-change: auto;
 }
 .game-board.slide-left,
 .player-nav.slide-left,
-.progress-section.slide-left {
-    transform: translateX(-100vw);
-}
+.progress-section.slide-left,
 .game-board.slide-right,
 .player-nav.slide-right,
-.progress-section.slide-right {
-    transform: translateX(100vw);
-}
+.progress-section.slide-right,
 .game-board.slide-reset,
 .player-nav.slide-reset,
 .progress-section.slide-reset {
-    transform: translateX(0);
+    transform: none !important;
 }

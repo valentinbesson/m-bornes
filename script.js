@@ -73,6 +73,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        // Progress Bubble : déplacement instantané si changement de joueur
+        if (typeof slideDirection === 'string') {
+            progressBubble.classList.add('no-anim');
+        } else {
+            progressBubble.classList.remove('no-anim');
+        }
+
         // Update Progress Bar
         const progressPercent = Math.min(player.score / 1000, 1) * 100;
         progressBubble.style.left = `calc(${progressPercent}% - ${progressPercent / 100 * 40}px)`;
@@ -163,16 +170,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 player.score += km;
                 player.cards[km]++;
                 if (player.score === 1000) player.isWinner = true;
-                // Passe au joueur suivant après ajout de carte avec un délai de 2 secondes
-                if (playerCount > 1 && !player.isWinner) {
-                    setTimeout(() => {
-                        const prevIndex = currentPlayerIndex;
-                        currentPlayerIndex = (currentPlayerIndex + 1) % playerCount;
-                        updateUI('left'); // Toujours slide gauche
-                    }, 2000);
-                    updateUI(); // Affiche d'abord la carte ajoutée
-                    return;
-                }
+                // Suppression du passage automatique au joueur suivant
+                updateUI();
+                return;
             }
         } else if (action === 'remove') {
             if (player.cards[km] > 0) {
@@ -199,7 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 el.classList.add('slide-reset');
                 currentPlayerIndex = nextIndex;
                 updateUI();
-            }, 500);
+            }, 400);
         });
     }
 
