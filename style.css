@@ -207,8 +207,18 @@ body {
 }
 
 /* --- Game Board --- */
+.game-board-slider {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: 100%; /* Permet à la game-board de prendre toute la hauteur dispo */
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+}
 .game-board {
-    flex: 1; /* C'est la clé du responsive en hauteur */
+    flex: 1 1 0; /* Clé du responsive en hauteur */
+    min-height: 0;
     background-color: var(--bg-board);
     border-radius: 24px 24px 12px 12px ;
     padding: 16px;
@@ -217,6 +227,17 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: space-around;
+    transition: transform 0.5s cubic-bezier(.77,0,.18,1);
+    will-change: transform;
+}
+.game-board.slide-left {
+    transform: translateX(-100%);
+}
+.game-board.slide-right {
+    transform: translateX(100%);
+}
+.game-board.slide-reset {
+    transform: translateX(0);
 }
 .card-row {
     display: flex;
@@ -497,4 +518,27 @@ body {
 /* Masquer les placeholders au-delà du 2ème pour la ligne 200 */
 .card-row:first-child .card-track .card-placeholder:nth-child(n+3) {
     visibility: hidden;
+}
+
+/* --- Animation de slide pour le game board, la nav et la barre de progression (multijoueur) --- */
+.game-board,
+.player-nav,
+.progress-section {
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); /* courbe fluide, sans rebond */
+    will-change: transform;
+}
+.game-board.slide-left,
+.player-nav.slide-left,
+.progress-section.slide-left {
+    transform: translateX(-100vw);
+}
+.game-board.slide-right,
+.player-nav.slide-right,
+.progress-section.slide-right {
+    transform: translateX(100vw);
+}
+.game-board.slide-reset,
+.player-nav.slide-reset,
+.progress-section.slide-reset {
+    transform: translateX(0);
 }

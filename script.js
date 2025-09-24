@@ -52,8 +52,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- UI UPDATE ---
-    function updateUI() {
+    function updateUI(slideDirection) {
         const player = players[currentPlayerIndex];
+
+        // Animation carrousel si multijoueur
+        if (playerCount > 1 && typeof slideDirection === 'string') {
+            [gameBoard, playerNav, document.querySelector('.progress-section')].forEach(el => {
+                if (!el) return;
+                el.classList.remove('slide-left', 'slide-right', 'slide-reset');
+                void el.offsetWidth;
+                if (slideDirection === 'left') {
+                    el.classList.add('slide-left');
+                } else if (slideDirection === 'right') {
+                    el.classList.add('slide-right');
+                }
+                setTimeout(() => {
+                    el.classList.remove('slide-left', 'slide-right');
+                    el.classList.add('slide-reset');
+                }, 500);
+            });
+        }
 
         // Update Progress Bar
         const progressPercent = Math.min(player.score / 1000, 1) * 100;
@@ -146,13 +164,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 player.cards[km]++;
                 if (player.score === 1000) player.isWinner = true;
                 // Passe au joueur suivant après ajout de carte avec un délai de 2 secondes
-                if (playerCount > 1) {
+                if (playerCount > 1 && !player.isWinner) {
                     setTimeout(() => {
+                        const prevIndex = currentPlayerIndex;
                         currentPlayerIndex = (currentPlayerIndex + 1) % playerCount;
-                        updateUI();
+                        updateUI('left'); // Toujours slide gauche
                     }, 2000);
                     updateUI(); // Affiche d'abord la carte ajoutée
-                    return; // Empêche updateUI() d'être appelé deux fois
+                    return;
                 }
             }
         } else if (action === 'remove') {
@@ -167,8 +186,21 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- PLAYER MANAGEMENT ---
     function changePlayer(direction) {
-        currentPlayerIndex = (currentPlayerIndex + direction + playerCount) % playerCount;
-        updateUI();
+        const prevIndex = currentPlayerIndex;
+        const nextIndex = (currentPlayerIndex + direction + playerCount) % playerCount;
+        // Slide toujours de droite à gauche (le nouveau pousse l'ancien)
+        [gameBoard, playerNav, document.querySelector('.progress-section')].forEach(el => {
+            if (!el) return;
+            el.classList.remove('slide-left', 'slide-right', 'slide-reset');
+            void el.offsetWidth;
+            el.classList.add('slide-left');
+            setTimeout(() => {
+                el.classList.remove('slide-left', 'slide-right');
+                el.classList.add('slide-reset');
+                currentPlayerIndex = nextIndex;
+                updateUI();
+            }, 500);
+        });
     }
 
     function setPlayerCount(count) {
