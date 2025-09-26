@@ -158,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     dasharray = 44;
                     dashoffset = 44 - Math.round(44 * percent);
                     svg = `<svg width="16" height="16" viewBox="0 0 16 16">
-                        <circle cx="8" cy="8" r="7" stroke="#141414" stroke-width="2" fill="none" />
+                        <circle cx="8" cy="8" r="7" stroke="#2a2a2a" stroke-width="2" fill="none" />
                         <circle class="progress" cx="8" cy="8" r="7" stroke="#07a240" stroke-width="2" fill="none" stroke-dasharray="44" stroke-dashoffset="${dashoffset}" />
                     </svg>`;
                     circleClass = 'progress-circle active';
@@ -167,10 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     percent = Math.min(playerData.score / 1000, 1);
                     dasharray = 25;
                     dashoffset = 25 - Math.round(25 * percent);
-                    svg = `<svg width="10" height="10" viewBox="0 0 10 10">
-                        <circle cx="5" cy="5" r="4" stroke="#141414" stroke-width="2" fill="none" />
-                        <circle class="progress" cx="5" cy="5" r="4" stroke="#72C4FE" stroke-width="2" fill="none" stroke-dasharray="25" stroke-dashoffset="${dashoffset}" />
-                    </svg>`;
+                    svg = `<svg width="14" height="14" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" stroke="#2a2a2a" stroke-width="1" fill="none" /><circle class="progress" cx="5" cy="5" r="4" stroke="#72C4FE" stroke-width="1" fill="none" stroke-dasharray="25" stroke-dashoffset="${dashoffset}" /></svg>`;
                     circleClass = 'progress-circle';
                     labelClass = 'tab-bar-label';
                 }
