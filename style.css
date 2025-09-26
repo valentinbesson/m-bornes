@@ -1,3 +1,77 @@
+
+.tab-bar-list {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 32px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.tab-bar-item {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    min-width: 80px;
+    transition: color 0.2s;
+    position: relative;
+    padding: 0 0px 8px 0px;
+    background: none;
+}
+.tab-bar-item:not(.active)::after {
+    content: '';
+    display: block;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    background: #72C4FE;
+    border-radius: 2px;
+    opacity: 1;
+}
+.tab-bar-item.active::after {
+    display: none;
+}
+.progress-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 8px;
+}
+.progress-circle.active {
+    width: 16px;
+    height: 16px;
+    box-shadow: 0 0 6px 0 #72C4FE55;
+}
+.progress-circle:not(.active) {
+    width: 10px;
+    height: 10px;
+}
+.tab-bar-label {
+    color: #72C4FE;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    transition: color 0.2s, font-size 0.2s, font-weight 0.2s;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+.tab-bar-label.active {
+    color: #F7FA8A;
+    font-weight: bold;
+    font-size: 24px;
+}
+.tab-bar-item .progress {
+    transition: stroke-dashoffset 0.4s cubic-bezier(.4,0,.2,1), stroke 0.2s;
+}
+.tab-bar-item.active .progress {
+    stroke: #F7FA8A !important;
+    filter: drop-shadow(0 0 4px #F7FA8A88);
+}
+.tab-bar-item:not(.active) .progress {
+    stroke: #2563EB !important;
+    opacity: 0.7;
+}
 :root {
     --bg-dark: #000000;
     --bg-board: #E1ED76;
@@ -541,4 +615,80 @@ body {
 .player-nav.slide-reset,
 .progress-section.slide-reset {
     transform: none !important;
+}
+
+/* --- Tab-barre joueurs --- */
+.tab-bar {
+    background: #181C24;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 60px;
+    box-shadow: 0 2px 8px 0 rgba(0,0,0,0.08);
+    border: none;
+    padding: 0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+.tab-bar-nav {
+    width: 100%;
+}
+.tab-bar-list {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 32px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.tab-bar-item {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    min-width: 80px;
+    transition: color 0.2s;
+    position: relative;
+    background: none;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+.tab-bar-item.active .tab-bar-label {
+    color: #F7FA8A;
+    font-weight: bold;
+    font-size: 24px;
+        color: #07a240;
+        font-weight: bold;
+        font-size: 24px;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    text-shadow: 0 1px 6px #F7FA8A33;
+}
+.tab-bar-label {
+    color: #2563EB;
+    font-size: 12px;
+    font-weight: 500;
+        color: #72C4FE;
+        font-size: 12px;
+        font-weight: 500;
+    letter-spacing: 0.5px;
+    transition: color 0.2s, font-size 0.2s, font-weight 0.2s;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+.progress-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 8px;
+}
+.progress-circle.active {
+    width: 16px;
+    height: 16px;
+    box-shadow: 0 0 6px 0 #F7FA8A55;
+}
+.progress-circle:not(.active) {
+    width: 10px;
+    height: 10px;
+}
+}
+.progress {
+    transition: stroke-dashoffset 0.4s cubic-bezier(.4,0,.2,1);
 }

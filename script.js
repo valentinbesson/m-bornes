@@ -52,6 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- UI UPDATE ---
+
     function updateUI(slideDirection) {
         const player = players[currentPlayerIndex];
 
@@ -144,12 +145,48 @@ document.addEventListener('DOMContentLoaded', () => {
             gameBoard.appendChild(row);
         });
 
-        // Update Player Navigation
+        // Génération dynamique de la tab-barre joueurs
+        const tabBarList = document.getElementById('tab-bar-list');
+        if (tabBarList) {
+            tabBarList.innerHTML = '';
+            for (let i = 0; i < playerCount; i++) {
+                const playerData = players[i];
+                const isActive = i === currentPlayerIndex;
+                let percent, dasharray, dashoffset, svg, circleClass, labelClass;
+                if (isActive) {
+                    percent = Math.min(playerData.score / 1000, 1);
+                    dasharray = 44;
+                    dashoffset = 44 - Math.round(44 * percent);
+                    svg = `<svg width="16" height="16" viewBox="0 0 16 16">
+                        <circle cx="8" cy="8" r="7" stroke="#141414" stroke-width="2" fill="none" />
+                        <circle class="progress" cx="8" cy="8" r="7" stroke="#07a240" stroke-width="2" fill="none" stroke-dasharray="44" stroke-dashoffset="${dashoffset}" />
+                    </svg>`;
+                    circleClass = 'progress-circle active';
+                    labelClass = 'tab-bar-label active';
+                } else {
+                    percent = Math.min(playerData.score / 1000, 1);
+                    dasharray = 25;
+                    dashoffset = 25 - Math.round(25 * percent);
+                    svg = `<svg width="10" height="10" viewBox="0 0 10 10">
+                        <circle cx="5" cy="5" r="4" stroke="#141414" stroke-width="2" fill="none" />
+                        <circle class="progress" cx="5" cy="5" r="4" stroke="#72C4FE" stroke-width="2" fill="none" stroke-dasharray="25" stroke-dashoffset="${dashoffset}" />
+                    </svg>`;
+                    circleClass = 'progress-circle';
+                    labelClass = 'tab-bar-label';
+                }
+                const li = document.createElement('li');
+                li.className = 'tab-bar-item' + (isActive ? ' active' : '');
+                li.innerHTML = `
+                    <div class="${circleClass}">${svg}</div>
+                    <span class="${labelClass}">${playerData.name}</span>
+                `;
+                tabBarList.appendChild(li);
+            }
+        }
+
+        // Ancienne navigation (masquée)
         if (playerCount > 1) {
             playerNav.style.display = 'flex';
-            currentPlayerInfo.textContent = player.name;
-            prevPlayerBtn.disabled = false;
-            nextPlayerBtn.disabled = false;
         } else {
             playerNav.style.display = 'none';
         }
@@ -312,8 +349,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- EVENT LISTENERS ---
     gameBoard.addEventListener('click', handleCardAction);
-    prevPlayerBtn.addEventListener('click', () => changePlayer(-1));
-    nextPlayerBtn.addEventListener('click', () => changePlayer(1));
+    // Navigation par clic sur la tab-barre
+    const tabBarList = document.querySelector('.tab-bar-list');
+    if (tabBarList) {
+        tabBarList.addEventListener('click', (e) => {
+            const li = e.target.closest('.tab-bar-item');
+            if (!li) return;
+            const index = Array.from(tabBarList.children).indexOf(li);
+            if (index !== -1 && index < playerCount) {
+                currentPlayerIndex = index;
+                updateUI();
+            }
+        });
+    }
     resetButton.addEventListener('click', showResetModal);
     dropdownContent.addEventListener('click', (e) => {
         e.preventDefault();
