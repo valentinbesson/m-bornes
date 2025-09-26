@@ -109,6 +109,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Update Game Board for the current player
         gameBoard.innerHTML = '';
+
+        
         CARD_DATA.forEach(cardInfo => {
             const cardCount = player.cards[cardInfo.km];
             const canAdd = !player.isWinner && (player.score + cardInfo.km <= 1000) && (!cardInfo.max || cardCount < cardInfo.max);
@@ -118,19 +120,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Générer 10 emplacements (cartes ou placeholders)
             let cardsHtml = '';
+
+            
+            let maxPossible;
+        if (player.isWinner) {
+    maxPossible = 0;
+} else if (cardInfo.km === 200) {
+    // Pour les 200, il faut aussi vérifier que le score restant permet d'en ajouter
+    const maxByScore = Math.floor((1000 - player.score) / 200);
+    maxPossible = Math.max(0, Math.min((cardInfo.max || 10) - cardCount, maxByScore));
+} else {
+    maxPossible = cardInfo.max ? cardInfo.max - cardCount : Math.floor((1000 - player.score) / cardInfo.km);
+}
+
             for (let i = 0; i < 10; i++) {
-                if (i < cardCount) {
-                    cardsHtml += `
-                        <div class="card">
-                            <img src="assets/images/km-${cardInfo.km}.svg" class="km-value" alt="${cardInfo.km}">
-                            <img src="assets/images/${cardInfo.animal}" class="animal" alt="${cardInfo.animal}">
-                        </div>
-                    `;
-                } else {
-                    // Utilise le SVG du répertoire distance
-                    cardsHtml += `<div class="card-placeholder"><img class="km-bg" src="assets/distance/distance-${cardInfo.km}.svg" alt="${cardInfo.km} km"></div>`;
-                }
-            }
+    if (i < cardCount) {
+        cardsHtml += `
+            <div class="card">
+                <img src="assets/images/km-${cardInfo.km}.svg" class="km-value" alt="${cardInfo.km}">
+                <img src="assets/images/${cardInfo.animal}" class="animal" alt="${cardInfo.animal}">
+            </div>
+        `;
+    } else {
+        // Placeholders visibles uniquement si on peut encore ajouter une carte à cet emplacement
+        const placeholderOpacity = (i - cardCount < maxPossible) ? '' : ' style="opacity:0;"';
+        cardsHtml += `<div class="card-placeholder"${placeholderOpacity}><img class="km-bg" src="assets/distance/distance-${cardInfo.km}.svg" alt="${cardInfo.km} km"></div>`;
+    }
+}
 
             row.innerHTML = `
                 <button class="card-row-btn" data-action="remove" data-km="${cardInfo.km}" ${cardCount === 0 ? 'disabled' : ''}>-</button>
@@ -346,6 +362,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- EVENT LISTENERS ---
     gameBoard.addEventListener('click', handleCardAction);
+    
+    // Permet l’ajout d’une carte en cliquant sur un placeholder visible
+gameBoard.addEventListener('click', function(e) {
+    const placeholder = e.target.closest('.card-placeholder');
+    if (!placeholder || placeholder.style.opacity === '0') return;
+    const row = placeholder.closest('.card-row');
+    if (!row) return;
+    const addBtn = row.querySelector('button[data-action="add"]');
+    if (!addBtn || addBtn.disabled) return;
+    addBtn.click();
+});
+
+
+
     // Navigation par clic sur la tab-barre
     const tabBarList = document.querySelector('.tab-bar-list');
     if (tabBarList) {
