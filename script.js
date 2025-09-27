@@ -120,33 +120,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Générer 10 emplacements (cartes ou placeholders)
             let cardsHtml = '';
-
-            
             let maxPossible;
-        if (player.isWinner) {
-    maxPossible = 0;
-} else if (cardInfo.km === 200) {
-    // Pour les 200, il faut aussi vérifier que le score restant permet d'en ajouter
-    const maxByScore = Math.floor((1000 - player.score) / 200);
-    maxPossible = Math.max(0, Math.min((cardInfo.max || 10) - cardCount, maxByScore));
-} else {
-    maxPossible = cardInfo.max ? cardInfo.max - cardCount : Math.floor((1000 - player.score) / cardInfo.km);
-}
+            if (player.isWinner) {
+                maxPossible = 0;
+            } else if (cardInfo.km === 200) {
+                // Pour les 200, il faut aussi vérifier que le score restant permet d'en ajouter
+                const maxByScore = Math.floor((1000 - player.score) / 200);
+                maxPossible = Math.max(0, Math.min((cardInfo.max || 10) - cardCount, maxByScore));
+            } else {
+                maxPossible = cardInfo.max ? cardInfo.max - cardCount : Math.floor((1000 - player.score) / cardInfo.km);
+            }
 
             for (let i = 0; i < 10; i++) {
-    if (i < cardCount) {
-        cardsHtml += `
-            <div class="card">
-                <img src="assets/images/km-${cardInfo.km}.svg" class="km-value" alt="${cardInfo.km}">
-                <img src="assets/images/${cardInfo.animal}" class="animal" alt="${cardInfo.animal}">
-            </div>
-        `;
-    } else {
-        // Placeholders visibles uniquement si on peut encore ajouter une carte à cet emplacement
-        const placeholderOpacity = (i - cardCount < maxPossible) ? '' : ' style="opacity:0;"';
-        cardsHtml += `<div class="card-placeholder"${placeholderOpacity}><img class="km-bg" src="assets/distance/distance-${cardInfo.km}.svg" alt="${cardInfo.km} km"></div>`;
-    }
-}
+                if (i < cardCount) {
+                    cardsHtml += `
+                        <div class="card">
+                            <img src="assets/images/km-${cardInfo.km}.svg" class="km-value" alt="${cardInfo.km}">
+                            <img src="assets/images/${cardInfo.animal}" class="animal" alt="${cardInfo.animal}">
+                        </div>
+                    `;
+                } else {
+                    // Placeholders visibles uniquement si on peut encore ajouter une carte à cet emplacement
+                    const placeholderOpacity = (i - cardCount < maxPossible) ? '' : ' style="opacity:0;"';
+                    cardsHtml += `<div class="card-placeholder"${placeholderOpacity}><img class="km-bg" src="assets/distance/distance-${cardInfo.km}.svg" alt="${cardInfo.km} km"></div>`;
+                }
+            }
 
             row.innerHTML = `
                 <button class="card-row-btn" data-action="remove" data-km="${cardInfo.km}" ${cardCount === 0 ? 'disabled' : ''}>-</button>
@@ -363,13 +361,23 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- EVENT LISTENERS ---
     gameBoard.addEventListener('click', handleCardAction);
     
-    // Permet l’ajout d’une carte en cliquant sur un placeholder visible
+// Permet l’ajout d’une carte en cliquant sur un placeholder ou une carte (si possible)
 gameBoard.addEventListener('click', function(e) {
+    // Cible le placeholder ou la carte
     const placeholder = e.target.closest('.card-placeholder');
-    if (!placeholder || placeholder.style.opacity === '0') return;
-    const row = placeholder.closest('.card-row');
+    const card = e.target.closest('.card');
+    let row, addBtn;
+
+    if (placeholder && placeholder.style.opacity !== '0') {
+        row = placeholder.closest('.card-row');
+    } else if (card) {
+        row = card.closest('.card-row');
+    } else {
+        return;
+    }
+
     if (!row) return;
-    const addBtn = row.querySelector('button[data-action="add"]');
+    addBtn = row.querySelector('button[data-action="add"]');
     if (!addBtn || addBtn.disabled) return;
     addBtn.click();
 });
