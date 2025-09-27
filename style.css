@@ -1,5 +1,6 @@
 :root {
     --bg-dark: #000000;
+    --bg-dark-grey: #4B5563;
     --bg-board: #E1ED76;
     --primary-blue: #2563EB;
     --primary-blue-hover: #1D4ED8;
@@ -173,7 +174,11 @@ body {
     transform: translate(-50%, -50%);
     width: 80px;
     height: 40px;
-    background-color: var(--primary-blue);
+    background-color: var(--bg-dark-grey);
+    background-image: url('assets/images/Car.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
     border: 2px solid var(--text-light);
     border-radius: 5px 15px 15px 5px ;
     box-shadow: 4px 6px 10px rgba(0, 0, 0, 0.4);
@@ -186,6 +191,7 @@ body {
     transition: left 0.5s ease;
     z-index: 2;
 }
+/* Progress Bubble States */
 .progress-bubble.no-anim {
     transition: none !important;
 }
@@ -297,7 +303,7 @@ body {
     flex: 1 1 0;
     min-width: 0;
     width: auto;
-    max-width: 90px;
+    /* max-width: 90px; */
     height: 100%;
     min-height: 60px;
     max-height: 180px;
