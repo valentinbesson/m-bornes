@@ -219,19 +219,79 @@ body {
     z-index: 3;
 }
 
+/* --- Game Containers Wrapper --- */
+.game-containers-wrapper {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    margin: 10px 10px 50px 10px;
+}
+
+.game-containers-wrapper .game-containers {
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.game-containers {
+    display: flex;
+    width: 400%; /* 4 joueurs max */
+    height: 100%;
+    gap: 20px; /* Espacement de 20px entre les containers */
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform, width;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
+    transform: translateZ(0); /* Force hardware acceleration */
+    /* Transition pour la largeur aussi */
+    transition-property: transform, width;
+}
+
+/* Optimisation pour les animations fluides */
+.game-containers.animating {
+    pointer-events: none;
+    z-index: 10;
+}
+
+.game-containers * {
+    backface-visibility: hidden;
+    transform-style: preserve-3d;
+}
+
+/* Amélioration de la fluidité */
+.game-containers-wrapper {
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+}
+
 /* --- Game Container --- */
 .game-container {
-    flex: 1;
+    flex: 0 0 25%; /* Chaque container prend 25% de la largeur totale */
     display: flex;
     flex-direction: column;
     overflow: hidden;
     position: relative;
-    transition: transform 0.5s cubic-bezier(.77,0,.18,1);
-    will-change: transform;
-    border-radius: 24px 24px 12px 12px ;
-    margin: 10px 10px 50px 10px;
+    border-radius: 24px 24px 12px 12px;
     background-color: var(--card-bg2);
 }
+
+/* --- Animation de slide pour le changement de joueur --- */
+.game-containers.slide-to-player-0 {
+    transform: translateX(0);
+}
+
+.game-containers.slide-to-player-1 {
+    transform: translateX(calc(-25% - 20px));
+}
+
+.game-containers.slide-to-player-2 {
+    transform: translateX(calc(-50% - 40px));
+}
+
+.game-containers.slide-to-player-3 {
+    transform: translateX(calc(-75% - 60px));
+}
+
 
 /* --- Game Board --- */
 .game-board-slider {
@@ -256,15 +316,6 @@ body {
     justify-content: stretch;
     transition: transform 0.5s cubic-bezier(.77,0,.18,1);
     will-change: transform;
-}
-.game-board.slide-left {
-    transform: translateX(-100%);
-}
-.game-board.slide-right {
-    transform: translateX(100%);
-}
-.game-board.slide-reset {
-    transform: translateX(0);
 }
 .card-row {
     display: flex;
@@ -559,6 +610,19 @@ body {
     background-color: var(--primary-blue);
     color: var(--text-light);
     border-color: var(--primary-blue);
+}
+#reset-names-btn.modal-btn.secondary.alert,
+.modal-btn.secondary.alert {
+    background-color: transparent !important;
+    color: var(--danger-red) !important;
+    border: 1px solid var(--danger-red) !important;
+    border-radius: 8px !important;
+}
+#reset-names-btn.modal-btn.secondary.alert:hover,
+.modal-btn.secondary.alert:hover {
+    background-color: var(--danger-red) !important;
+    color: var(--text-light) !important;
+    border-color: var(--danger-red-hover) !important;
 }
 
 /* --- Boutons Danger/Reset --- */

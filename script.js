@@ -12,22 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
         { km: 25,  animal: 'snail-25.png' }
     ];
 
-    // --- DOM ELEMENTS ---
-    const gameBoard = document.getElementById('game-board');
-    const playerCountText = document.getElementById('player-count-text');
-    const playerNav = document.getElementById('player-nav');
-    const currentPlayerInfo = document.getElementById('current-player-info');
-    const prevPlayerBtn = document.getElementById('prev-player-btn');
-    const nextPlayerBtn = document.getElementById('next-player-btn');
-    const progressBubble = document.getElementById('progress-bubble');
-    const dropdown = document.getElementById('player-dropdown');
-    const dropdownContent = document.getElementById('player-dropdown-content');
-    const modalBackdrop = document.getElementById('modal-backdrop');
-    const modalContent = document.getElementById('modal-content');
-    const resetButton = document.getElementById('reset-btn');
-    resetButton.classList.add('secondary');
-
-    // --- INITIALIZATION ---
+    // --- PLAYER CREATION ---
     function createPlayer(id) {
         const player = {
             id: id,
@@ -40,27 +25,125 @@ document.addEventListener('DOMContentLoaded', () => {
         return player;
     }
 
-    function initGame() {
-        loadSettings();
-        if (!players.length) {
-            players = Array.from({ length: 4 }, (_, i) => createPlayer(i + 1));
+    // --- INITIALIZATION ---
+    function init() {
+        players = [createPlayer(1), createPlayer(2), createPlayer(3), createPlayer(4)];
+        
+        const gameContainers = document.getElementById('game-containers');
+        
+        if (gameContainers) {
+            gameContainers.innerHTML = '';
+            
+            // Créer un container pour chaque joueur (max 4)
+            for (let playerIndex = 0; playerIndex < 4; playerIndex++) {
+                const containerDiv = document.createElement('div');
+                containerDiv.className = 'game-container';
+                containerDiv.id = `game-container-${playerIndex}`;
+                
+                containerDiv.innerHTML = `
+                    <section class="progress-section">
+                        <div class="progress-track">
+                            <div id="progress-bubble-${playerIndex}" class="progress-bubble">0</div>
+                            <img src="assets/images/arrival.svg" class="progress-arrival-flag" alt="Arrivée">
+                        </div>
+                    </section>
+                    <main class="game-board-slider">
+                        <div id="game-board-${playerIndex}" class="game-board">
+                            ${CARD_DATA.map(card => `
+                                <div class="card-row">
+                                    <button class="card-row-btn" data-km="${card.km}" data-player="${playerIndex}" disabled>-</button>
+                                    <div class="card-track">
+                                        ${Array(10).fill().map((_, i) => `
+                                            <div class="card-placeholder">
+                                                <img class="km-bg" src="assets/distance/distance-${card.km}.svg" alt="${card.km} km">
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                    <div class="controls">
+                                        <span class="count">0</span>
+                                        <button class="card-row-btn add" data-km="${card.km}" data-player="${playerIndex}">+</button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </main>
+                `;
+                
+                gameContainers.appendChild(containerDiv);
+            }
         }
-        currentPlayerIndex = 0;
+    }
+
+    // --- GAME LOGIC ---
+    function addCard(km) {
+        const player = players[currentPlayerIndex];
+        const cardInfo = CARD_DATA.find(card => card.km === km);
+        
+        if (!player || !cardInfo) return;
+        
+        const canAdd = player.score + km <= 1000 && 
+                      (!cardInfo.max || player.cards[km] < cardInfo.max);
+        
+        if (canAdd) {
+            player.cards[km]++;
+            player.score += km;
+            
+            // Check if player wins
+            if (player.score >= 1000) {
+                player.isWinner = true;
+            }
+            
+            updateUI();
+        }
+    }
+    
+    function removeCard(km) {
+        const player = players[currentPlayerIndex];
+        
+        if (!player || player.cards[km] <= 0) return;
+        
+        player.cards[km]--;
+        player.score -= km;
+        
+        // Reset winner status if score drops below 1000
+        if (player.score < 1000) {
+            player.isWinner = false;
+        }
+        
         updateUI();
     }
 
     // --- UI UPDATE ---
-
     function updateUI() {
-        const player = players[currentPlayerIndex];
-
-        // Update Progress Bar
+        // Update all active players
+        for (let i = 0; i < playerCount; i++) {
+            updatePlayerContainer(i);
+        }
+        
+        // Apply carousel animation
+        const gameContainers = document.getElementById('game-containers');
+        if (gameContainers) {
+            gameContainers.className = 'game-containers';
+            gameContainers.classList.add(`slide-to-player-${currentPlayerIndex}`);
+        }
+        
+        updateTabBar();
+    }
+    
+    function updatePlayerContainer(playerIndex) {
+        const player = players[playerIndex];
+        const progressBubble = document.getElementById(`progress-bubble-${playerIndex}`);
+        const gameBoard = document.getElementById(`game-board-${playerIndex}`);
+        
+        if (!player || !progressBubble || !gameBoard) return;
+        
+        // Update progress
         const progressPercent = Math.min(player.score / 1000, 1) * 100;
         progressBubble.style.left = `calc(${progressPercent}% - ${progressPercent / 100 * 40}px)`;
         progressBubble.textContent = player.score;
         progressBubble.style.borderColor = player.isWinner ? '#4CAF50' : 'white';
-
-        // Ajout/Retrait de la classe d'arrivée (vert + glow)
+        
+        // Winner styling
         if (player.isWinner) {
             progressBubble.classList.add('arrival');
             // Confettis à l'arrivée (une seule fois)
@@ -79,179 +162,575 @@ document.addEventListener('DOMContentLoaded', () => {
             progressBubble.classList.remove('arrival');
             progressBubble._confettiDone = false;
         }
-
-        // Update Game Board
-        if (gameBoard) {
-            gameBoard.innerHTML = '';
+        
+        // Update cards
+        const cardRows = gameBoard.querySelectorAll('.card-row');
+        CARD_DATA.forEach((cardInfo, index) => {
+            const row = cardRows[index];
+            if (!row) return;
             
-            CARD_DATA.forEach(cardInfo => {
-                const cardCount = player.cards[cardInfo.km];
-                const canAdd = !player.isWinner && (player.score + cardInfo.km <= 1000) && (!cardInfo.max || cardCount < cardInfo.max);
-
-                const row = document.createElement('div');
-                row.className = 'card-row';
-
-                // Générer 10 emplacements (cartes ou placeholders)
-                let cardsHtml = '';
-                let maxPossible;
-                if (player.isWinner) {
-                    maxPossible = 0;
-                } else if (cardInfo.km === 200) {
-                    // Pour les 200, il faut aussi vérifier que le score restant permet d'en ajouter
-                    const maxByScore = Math.floor((1000 - player.score) / 200);
-                    maxPossible = Math.max(0, Math.min((cardInfo.max || 10) - cardCount, maxByScore));
-                } else {
-                    maxPossible = cardInfo.max ? cardInfo.max - cardCount : Math.floor((1000 - player.score) / cardInfo.km);
-                }
-
+            const cardCount = player.cards[cardInfo.km];
+            const canAdd = !player.isWinner && 
+                          player.score + cardInfo.km <= 1000 && 
+                          (!cardInfo.max || cardCount < cardInfo.max);
+            
+            // Update count
+            const countSpan = row.querySelector('.count');
+            if (countSpan) countSpan.textContent = cardCount;
+            
+            // Update buttons
+            const removeBtn = row.querySelector('.card-row-btn:not(.add)');
+            const addBtn = row.querySelector('.card-row-btn.add');
+            
+            if (removeBtn) removeBtn.disabled = cardCount === 0;
+            if (addBtn) addBtn.disabled = !canAdd;
+            
+            // Update cards display
+            const cardTrack = row.querySelector('.card-track');
+            if (cardTrack) {
+                cardTrack.innerHTML = '';
                 for (let i = 0; i < 10; i++) {
                     if (i < cardCount) {
-                        cardsHtml += `
+                        cardTrack.innerHTML += `
                             <div class="card">
                                 <img src="assets/images/km-${cardInfo.km}.svg" class="km-value" alt="${cardInfo.km}">
                                 <img src="assets/images/${cardInfo.animal}" class="animal" alt="${cardInfo.animal}">
                             </div>
                         `;
                     } else {
-                        // Placeholders visibles uniquement si on peut encore ajouter une carte à cet emplacement
+                        const maxPossible = cardInfo.max ? cardInfo.max - cardCount : Math.floor((1000 - player.score) / cardInfo.km);
                         const placeholderOpacity = (i - cardCount < maxPossible) ? '' : ' style="opacity:0;"';
-                        cardsHtml += `<div class="card-placeholder"${placeholderOpacity}><img class="km-bg" src="assets/distance/distance-${cardInfo.km}.svg" alt="${cardInfo.km} km"></div>`;
+                        cardTrack.innerHTML += `
+                            <div class="card-placeholder"${placeholderOpacity}>
+                                <img class="km-bg" src="assets/distance/distance-${cardInfo.km}.svg" alt="${cardInfo.km} km">
+                            </div>
+                        `;
                     }
                 }
+            }
+        });
+    }
 
-                row.innerHTML = `
-                    <button class="card-row-btn" data-action="remove" data-km="${cardInfo.km}" ${cardCount === 0 ? 'disabled' : ''}>-</button>
-                    <div class="card-track">
-                        ${cardsHtml}
-                    </div>
-                    <div class="controls">
-                        <span class="count">${cardCount}</span>
-                        <button class="card-row-btn add" data-action="add" data-km="${cardInfo.km}" ${!canAdd ? 'disabled' : ''}>+</button>
-                    </div>
-                `;
-                gameBoard.appendChild(row);
-            });
-        }
-
-        // Génération dynamique de la tab-barre joueurs
+    // --- TAB BAR ---
+    function updateTabBar() {
         const tabBarList = document.getElementById('tab-bar-list');
-        if (tabBarList) {
-            tabBarList.innerHTML = '';
-            for (let i = 0; i < playerCount; i++) {
-                const playerData = players[i];
-                const isActive = i === currentPlayerIndex;
-                let percent, dasharray, dashoffset, svg, circleClass, labelClass;
-                if (isActive) {
-                    percent = Math.min(playerData.score / 1000, 1);
-                    dasharray = 44;
-                    dashoffset = 44 - Math.round(44 * percent);
-                    svg = `<svg width="18" height="18" viewBox="0 0 16 16">
-                        <circle cx="8" cy="8" r="7" stroke="#000" stroke-width="3" fill="none" />
-                        <circle class="progress" cx="8" cy="8" r="7" stroke="#07a240" stroke-width="1.5" fill="none" stroke-dasharray="44" stroke-dashoffset="${dashoffset}" />
-                    </svg>`;
-                    circleClass = 'progress-circle active';
-                    labelClass = 'tab-bar-label active';
-                } else {
-                    percent = Math.min(playerData.score / 1000, 1);
-                    dasharray = 25;
-                    dashoffset = 25 - Math.round(25 * percent);
-                    svg = `<svg width="18" height="18" viewBox="0 0 10 10">
+        if (!tabBarList) return;
+        
+        tabBarList.innerHTML = '';
+        for (let i = 0; i < playerCount; i++) {
+            const player = players[i];
+            const isActive = i === currentPlayerIndex;
+            
+            // Calculate progress
+            const percent = Math.min(player.score / 1000, 1);
+            let dasharray, dashoffset, svg, circleClass, labelClass;
+            
+            if (isActive) {
+                dasharray = 44;
+                dashoffset = 44 - Math.round(44 * percent);
+                svg = `<svg width="18" height="18" viewBox="0 0 16 16">
+                    <circle cx="8" cy="8" r="7" stroke="#000" stroke-width="3" fill="none" />
+                    <circle class="progress" cx="8" cy="8" r="7" stroke="#07a240" stroke-width="1.5" fill="none" stroke-dasharray="44" stroke-dashoffset="${dashoffset}" />
+                </svg>`;
+                circleClass = 'progress-circle active';
+                labelClass = 'tab-bar-label active';
+            } else {
+                dasharray = 25;
+                dashoffset = 25 - Math.round(25 * percent);
+                svg = `<svg width="18" height="18" viewBox="0 0 10 10">
                     <circle cx="5" cy="5" r="4" stroke="#000" stroke-width="2" fill="none" />
                     <circle class="progress" cx="5" cy="5" r="4" stroke="#72C4FE" stroke-width="1" fill="none" stroke-dasharray="25" stroke-dashoffset="${dashoffset}" />
-                    </svg>`;
-                    circleClass = 'progress-circle';
-                    labelClass = 'tab-bar-label';
-                }
-                const li = document.createElement('li');
-                li.className = 'tab-bar-item' + (isActive ? ' active' : '');
-                li.innerHTML = `
-                    <div class="${circleClass}">${svg}</div>
-                    <span class="${labelClass}">${playerData.name}</span>
-                `;
-                tabBarList.appendChild(li);
+                </svg>`;
+                circleClass = 'progress-circle';
+                labelClass = 'tab-bar-label';
             }
-        }
-
-        // Ancienne navigation (masquée)
-        if (playerCount > 1) {
-            playerNav.style.display = 'flex';
-        } else {
-            playerNav.style.display = 'none';
+            
+            const li = document.createElement('li');
+            li.className = 'tab-bar-item' + (isActive ? ' active' : '');
+            li.innerHTML = `
+                <div class="${circleClass}">
+                    ${svg}
+                </div>
+                <span class="${labelClass}">${player.name}</span>
+            `;
+            
+            tabBarList.appendChild(li);
         }
     }
 
-    // --- GAME LOGIC ---
-    function handleCardAction(e) {
-        const action = e.target.dataset.action;
-        const km = parseInt(e.target.dataset.km);
-
-        if (!action || !km) return;
-
-        const player = players[currentPlayerIndex];
+    // --- NAVIGATION ---
+    function changePlayer(newIndex) {
+        if (newIndex === currentPlayerIndex || isAnimating) return;
         
-        if (action === 'add') {
-            const cardInfo = CARD_DATA.find(c => c.km === km);
-            if (!player.isWinner && (player.score + km <= 1000) && (!cardInfo.max || player.cards[km] < cardInfo.max)) {
-                player.score += km;
-                player.cards[km]++;
-                if (player.score === 1000) player.isWinner = true;
-                // Suppression du passage automatique au joueur suivant
-                updateUI();
-                return;
-            }
-        } else if (action === 'remove') {
-            if (player.cards[km] > 0) {
-                player.score -= km;
-                player.cards[km]--;
-                player.isWinner = false;
-            }
+        // Gestion des boucles avec approche simple
+        if (newIndex < 0) {
+            newIndex = playerCount - 1; // Aller au dernier joueur
+        } else if (newIndex >= playerCount) {
+            newIndex = 0; // Aller au premier joueur
         }
+        
+        // Changement normal pour tous les cas (y compris les boucles)
+        isAnimating = true;
+        const gameContainers = document.querySelector('.game-containers');
+        if (gameContainers) {
+            gameContainers.classList.add('animating');
+        }
+        
+        currentPlayerIndex = newIndex;
         updateUI();
+        
+        // Délai court pour permettre l'animation CSS
+        setTimeout(() => {
+            if (gameContainers) {
+                gameContainers.classList.remove('animating');
+            }
+            isAnimating = false;
+            resetSwipeValues();
+        }, 450); // Correspond à la durée CSS (0.4s) + marge
     }
     
-    // --- PLAYER MANAGEMENT ---
-    function changePlayer(direction) {
-        if (playerCount <= 1) return;
-        
-        currentPlayerIndex = (currentPlayerIndex + direction + playerCount) % playerCount;
-        updateUI();
-    }
+    
+    // --- SWIPE FUNCTIONALITY ---
+    let swipeStartX = 0;
+    let swipeStartY = 0;
+    let swipeEndX = 0;
+    let swipeEndY = 0;
+    let isSwipeInProgress = false;
+    let isAnimating = false;
+    let swipeStartTime = 0;
+    
+    function addSwipeListeners() {
+        const gameContainersWrapper = document.querySelector('.game-containers-wrapper');
+        if (!gameContainersWrapper) return;
 
+        // Étendre la zone de swipe à tout le game-board
+        const gameContainers = document.getElementById('game-containers');
+        if (!gameContainers) return;
+
+        // Touch events avec debouncing - maintenant sur tout le game-containers
+        gameContainers.addEventListener('touchstart', handleTouchStart, { passive: true });
+        gameContainers.addEventListener('touchmove', handleTouchMove, { passive: false });
+        gameContainers.addEventListener('touchend', handleTouchEnd, { passive: true });
+        gameContainers.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+
+        // Mouse events pour desktop avec debouncing
+        let mouseDown = false;
+        let lastMouseAction = 0;
+        let swipeStartTarget = null;
+
+        gameContainers.addEventListener('mousedown', (e) => {
+            const now = Date.now();
+            if (now - lastMouseAction < 150) return; // Debouncing 150ms
+
+            if (isAnimating || isSwipeInProgress) {
+                return;
+            }
+
+            lastMouseAction = now;
+            mouseDown = true;
+            swipeStartTarget = e.target;
+            swipeStartX = e.clientX;
+            swipeStartY = e.clientY;
+            swipeEndX = swipeStartX;
+            swipeEndY = swipeStartY;
+            swipeStartTime = now;
+            isSwipeInProgress = true;
+        });
+
+        gameContainers.addEventListener('mousemove', (e) => {
+            if (!mouseDown || !isSwipeInProgress || isAnimating) return;
+            swipeEndX = e.clientX;
+            swipeEndY = e.clientY;
+        });
+
+        gameContainers.addEventListener('mouseup', (e) => {
+            if (!mouseDown) return;
+            mouseDown = false;
+
+            // Si le target a changé ou s'il y a eu un mouvement significatif, traiter comme swipe
+            const targetChanged = swipeStartTarget !== e.target;
+            const hasSignificantMovement = Math.abs(swipeEndX - swipeStartX) > 15 || Math.abs(swipeEndY - swipeStartY) > 15;
+
+            if (isSwipeInProgress && !isAnimating && (targetChanged || hasSignificantMovement)) {
+                handleSwipeEnd();
+            } else {
+                resetSwipeValues();
+            }
+        });
+
+        gameContainers.addEventListener('mouseleave', () => {
+            mouseDown = false;
+            resetSwipeValues();
+        });
+    }
+    
+    function handleTouchStart(e) {
+        // Ignorer si animation en cours ou swipe déjà actif
+        if (isAnimating || isSwipeInProgress) return;
+
+        // Empêcher les multiples touches
+        if (e.touches.length > 1) {
+            resetSwipeValues();
+            return;
+        }
+
+        const touch = e.touches[0];
+        swipeStartX = touch.clientX;
+        swipeStartY = touch.clientY;
+        swipeEndX = swipeStartX;
+        swipeEndY = swipeStartY;
+        swipeStartTime = Date.now();
+        isSwipeInProgress = true;
+    }
+    
+    function handleTouchMove(e) {
+        if (!isSwipeInProgress || isAnimating || e.touches.length > 1) {
+            resetSwipeValues();
+            return;
+        }
+        
+        const touch = e.touches[0];
+        swipeEndX = touch.clientX;
+        swipeEndY = touch.clientY;
+        
+        const deltaX = Math.abs(swipeEndX - swipeStartX);
+        const deltaY = Math.abs(swipeEndY - swipeStartY);
+        
+        // Prévenir le scroll si c'est un swipe horizontal significatif
+        if (deltaX > deltaY && deltaX > 15) {
+            e.preventDefault();
+        }
+        
+        // Annuler si le mouvement vertical est trop important
+        if (deltaY > 50 && deltaY > deltaX * 1.5) {
+            resetSwipeValues();
+        }
+    }
+    
+    function handleTouchEnd(e) {
+        if (!isSwipeInProgress) return;
+        
+        // Si animation en cours, annuler
+        if (isAnimating) {
+            resetSwipeValues();
+            return;
+        }
+        
+        handleSwipeEnd();
+    }
+    
+    function handleSwipeEnd() {
+        if (!isSwipeInProgress || isAnimating) {
+            resetSwipeValues();
+            return;
+        }
+
+        const deltaX = swipeEndX - swipeStartX;
+        const deltaY = swipeEndY - swipeStartY;
+        const swipeTime = Date.now() - swipeStartTime;
+        const absX = Math.abs(deltaX);
+        const absY = Math.abs(deltaY);
+
+        // Conditions pour un swipe valide
+        const minSwipeDistance = 40; // Distance minimum réduite pour plus de sensibilité
+        const maxSwipeTime = 1000; // Temps maximum
+        const isHorizontal = absX > absY * 1.2; // Ratio moins strict
+        const isValidDistance = absX >= minSwipeDistance;
+        const isValidTime = swipeTime <= maxSwipeTime;
+        const isValidVelocity = (absX / swipeTime) > 0.08; // Vélocité minimum réduite
+
+        // Multi-joueurs uniquement
+        const hasMultiplePlayers = playerCount > 1;
+
+        if (hasMultiplePlayers && isHorizontal && isValidDistance && isValidTime && isValidVelocity) {
+            // Débouncer les swipes rapides successifs
+            const now = Date.now();
+            if (now - (window.lastSwipeTime || 0) < 500) {
+                resetSwipeValues();
+                return;
+            }
+            window.lastSwipeTime = now;
+
+            if (deltaX > 0) {
+                // Swipe vers la droite = joueur précédent
+                changePlayer(currentPlayerIndex - 1);
+            } else {
+                // Swipe vers la gauche = joueur suivant
+                changePlayer(currentPlayerIndex + 1);
+            }
+        }
+
+        resetSwipeValues();
+    }
+    
+    function resetSwipeValues() {
+        swipeStartX = 0;
+        swipeStartY = 0;
+        swipeEndX = 0;
+        swipeEndY = 0;
+        swipeStartTime = 0;
+        isSwipeInProgress = false;
+    }
+    
     function setPlayerCount(count) {
         playerCount = count;
-        playerCountText.textContent = `${count} joueur${count > 1 ? 's' : ''}`;
+        const playerCountText = document.getElementById('player-count-text');
+        if (playerCountText) {
+            playerCountText.textContent = `${count} joueur${count > 1 ? 's' : ''}`;
+        }
+        
         if (currentPlayerIndex >= count) {
             currentPlayerIndex = count - 1;
         }
-        showPlayerNameModal();
-        saveSettings(); // Sauvegarde le nombre de joueurs
+        
+        updateTabBar();
+        
+        // Show/hide tab bar
+        const playerNav = document.getElementById('player-nav');
+        if (playerNav) {
+            playerNav.style.display = count > 1 ? 'flex' : 'none';
+        }
+        
+        const dropdown = document.getElementById('player-dropdown');
+        if (dropdown) dropdown.classList.remove('open');
+        
+        // Show player name modal for multi-player games
+        if (count > 1) {
+            setTimeout(() => showPlayerNameModal(), 100);
+        }
+        
+        saveSettings();
     }
 
-    // --- LOCAL STORAGE ---
-    function saveSettings() {
-        const settings = {
-            playerCount,
-            playerNames: players.map(p => p.name)
-        };
-        localStorage.setItem('mbornes-settings', JSON.stringify(settings));
-    }
-    function loadSettings() {
-        const settings = JSON.parse(localStorage.getItem('mbornes-settings'));
-        if (settings) {
-            playerCount = settings.playerCount;
-            players = Array.from({ length: 4 }, (_, i) => createPlayer(i + 1));
-            for (let i = 0; i < playerCount; i++) {
-                players[i].name = settings.playerNames[i] || `Joueur ${i + 1}`;
+    // --- EVENT LISTENERS ---
+    function addEventListeners() {
+        const gameContainers = document.getElementById('game-containers');
+        if (!gameContainers) return;
+        
+        let lastClickTime = 0;
+        let isProcessingClick = false;
+        
+        gameContainers.addEventListener('click', (e) => {
+            // Debouncing des clics rapides
+            const now = Date.now();
+            if (now - lastClickTime < 150 || isProcessingClick || isAnimating) {
+                return;
             }
+
+            lastClickTime = now;
+            isProcessingClick = true;
+
+            // Timeout de sécurité pour débloquer les clics
+            setTimeout(() => {
+                isProcessingClick = false;
+            }, 200);
+
+            // Gestion des boutons +/-
+            const button = e.target.closest('.card-row-btn');
+            if (button && !button.disabled) {
+                const km = parseInt(button.dataset.km);
+                const playerIndex = parseInt(button.dataset.player);
+
+                // Vérifier que c'est le joueur actuel
+                if (playerIndex !== currentPlayerIndex) {
+                    isProcessingClick = false;
+                    return;
+                }
+
+                if (button.classList.contains('add')) {
+                    addCard(km);
+                } else {
+                    removeCard(km);
+                }
+
+                isProcessingClick = false;
+                return;
+            }
+
+            // Gestion des clics sur cartes et placeholders (pour ajouter)
+            const card = e.target.closest('.card');
+            const placeholder = e.target.closest('.card-placeholder');
+
+            if (card || placeholder) {
+                const cardRow = e.target.closest('.card-row');
+                if (!cardRow) {
+                    isProcessingClick = false;
+                    return;
+                }
+
+                const addButton = cardRow.querySelector('.card-row-btn.add');
+                if (addButton && !addButton.disabled) {
+                    const km = parseInt(addButton.dataset.km);
+                    const playerIndex = parseInt(addButton.dataset.player);
+
+                    // Vérifier que c'est le joueur actuel
+                    if (playerIndex !== currentPlayerIndex) {
+                        isProcessingClick = false;
+                        return;
+                    }
+
+                    addCard(km);
+                }
+
+                isProcessingClick = false;
+                return;
+            }
+
+            // Si ce n'est pas un élément cliquable, permettre le swipe
+            isProcessingClick = false;
+        });
+        
+        // Prévenir les événements parasites pendant les animations
+        gameContainers.addEventListener('touchstart', (e) => {
+            if (isAnimating) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        }, { passive: false });
+        
+        gameContainers.addEventListener('mousedown', (e) => {
+            if (isAnimating && e.target.closest('.card-row-btn, .card, .card-placeholder')) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        });
+    }
+    
+    function addTabBarEventListeners() {
+        const tabBarList = document.getElementById('tab-bar-list');
+        if (tabBarList) {
+            tabBarList.addEventListener('click', (e) => {
+                const li = e.target.closest('.tab-bar-item');
+                if (!li) return;
+                
+                const index = Array.from(tabBarList.children).indexOf(li);
+                if (index !== -1 && index < playerCount) {
+                    changePlayer(index);
+                }
+            });
+        }
+        
+        // Player count dropdown
+        const dropdownContent = document.getElementById('player-dropdown-content');
+        if (dropdownContent) {
+            dropdownContent.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (e.target.tagName === 'A') {
+                    const count = parseInt(e.target.dataset.players);
+                    setPlayerCount(count);
+                }
+            });
+        }
+        
+        // Dropdown toggle
+        const dropdownButton = document.getElementById('player-dropdown-button');
+        const dropdown = document.getElementById('player-dropdown');
+        if (dropdownButton && dropdown) {
+            dropdownButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdown.classList.toggle('open');
+            });
+            
+            document.addEventListener('click', (e) => {
+                if (!dropdown.contains(e.target)) {
+                    dropdown.classList.remove('open');
+                }
+            });
+        }
+        
+        // Reset button
+        const resetButton = document.getElementById('reset-btn');
+        if (resetButton) {
+            resetButton.addEventListener('click', showResetModal);
+        }
+        
+        // Modal backdrop click to close
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        if (modalBackdrop) {
+            modalBackdrop.addEventListener('click', (e) => {
+                if (e.target === modalBackdrop) {
+                    closeModal();
+                }
+            });
+        }
+        
+        // Escape key to close modal + Navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+            // Navigation avec les flèches (pour tester la boucle)
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                changePlayer(currentPlayerIndex - 1);
+            }
+            if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                changePlayer(currentPlayerIndex + 1);
+            }
+        });
+        
+        // Initialize swipe functionality
+        addSwipeListeners();
+    }
+
+    // --- RESET FUNCTIONALITY ---
+    function resetGame() {
+        // Reset all players
+        players.forEach(player => {
+            player.score = 0;
+            player.isWinner = false;
+            CARD_DATA.forEach(card => player.cards[card.km] = 0);
+        });
+        
+        // Reset to player 1
+        currentPlayerIndex = 0;
+        updateUI();
+    }
+    
+    function showResetModal() {
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        const modalContent = document.getElementById('modal-content');
+        
+        if (!modalBackdrop || !modalContent) return;
+        
+        modalContent.innerHTML = `
+            <h3>Réinitialiser le jeu</h3>
+            <p>Êtes-vous sûr de vouloir remettre à zéro tous les scores ?</p>
+            <div class="modal-buttons">
+                <button id="cancel-reset" class="modal-btn secondary">Annuler</button>
+                <button id="confirm-reset" class="modal-btn primary alert">Réinitialiser</button>
+            </div>
+        `;
+        
+        // Add event listeners for modal buttons
+        modalContent.querySelector('#cancel-reset').addEventListener('click', closeModal);
+        modalContent.querySelector('#confirm-reset').addEventListener('click', () => {
+            resetGame();
+            closeModal();
+        });
+        
+        modalBackdrop.style.display = 'flex';
+    }
+    
+    function closeModal() {
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        if (modalBackdrop) {
+            modalBackdrop.style.display = 'none';
         }
     }
 
-    // --- MODAL LOGIC ---
+    // --- PLAYER NAME MANAGEMENT ---
     function showPlayerNameModal() {
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        const modalContent = document.getElementById('modal-content');
+        
+        if (!modalBackdrop || !modalContent) return;
+        
         modalContent.innerHTML = `
             <h3 style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
                 <span>Noms des joueurs</span>
-                <button id="reset-names-btn" title="Réinitialiser les noms" style="font-size:13px;padding:4px 10px;border-radius:6px;border:1px solid #D1D5DB;background:#F3F4F6;cursor:pointer;">Reset</button>
+                <button id="reset-names-btn" class="modal-btn secondary alert" title="Réinitialiser les noms">Reset</button>
             </h3>
             <div class="player-name-inputs">
                 ${Array.from({ length: playerCount }, (_, i) => `
@@ -262,160 +741,151 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button id="save-names-btn" class="modal-btn primary">OK</button>
             </div>
         `;
-        modalBackdrop.style.display = 'flex';
-        // Ajout : vider le champ si la valeur est la valeur par défaut au focus ou au clic
-        setTimeout(() => {
-            const inputs = modalContent.querySelectorAll('.player-name-inputs input');
-            inputs.forEach((input, i) => {
-                function clearIfDefault() {
-                    if (this.value === `Joueur ${i + 1}`) {
-                        this.value = '';
+        
+        // Add event listeners
+        modalContent.querySelector('#save-names-btn').addEventListener('click', savePlayerNames);
+        modalContent.querySelector('#reset-names-btn').addEventListener('click', resetPlayerNames);
+        
+        // Add click/focus listeners to inputs for clearing default values
+        for (let i = 0; i < playerCount; i++) {
+            const input = modalContent.querySelector(`#player-name-${i}`);
+            if (input) {
+                const defaultValue = `Joueur ${i + 1}`;
+                
+                // Clear default value on focus if it hasn't been changed
+                const clearIfDefault = () => {
+                    if (input.value === defaultValue) {
+                        input.value = '';
+                        input.style.color = ''; // Reset color to normal
                     }
+                };
+                
+                // Restore default value on blur if empty
+                const restoreIfEmpty = () => {
+                    if (input.value.trim() === '') {
+                        input.value = defaultValue;
+                        input.style.color = '#999'; // Make it look like placeholder
+                    } else {
+                        input.style.color = ''; // Normal color for custom text
+                    }
+                };
+                
+                // Set initial styling for default values
+                if (input.value === defaultValue) {
+                    input.style.color = '#999';
                 }
+                
                 input.addEventListener('focus', clearIfDefault);
                 input.addEventListener('click', clearIfDefault);
-            });
-            // Ajout du bouton reset noms
-            const resetBtn = document.getElementById('reset-names-btn');
-            if (resetBtn) {
-                resetBtn.onclick = () => {
-                    inputs.forEach((input, i) => {
-                        input.value = `Joueur ${i + 1}`;
-                    });
-                };
+                input.addEventListener('blur', restoreIfEmpty);
+                
+                // Also clear on first keypress if it's the default value
+                input.addEventListener('keydown', (e) => {
+                    if (input.value === defaultValue) {
+                        // Small delay to ensure the key is processed
+                        setTimeout(() => {
+                            if (input.value !== defaultValue) {
+                                input.style.color = '';
+                            }
+                        }, 0);
+                    }
+                });
             }
-        }, 0);
-        document.getElementById('save-names-btn').onclick = () => {
-            for (let i = 0; i < playerCount; i++) {
-                const input = document.getElementById(`player-name-${i}`);
-                players[i].name = input.value || `Joueur ${i + 1}`;
-            }
-            modalBackdrop.style.display = 'none';
-            updateUI();
-            saveSettings(); // Sauvegarde les noms
-        };
+        }
+        
+        // Focus on first input
+        const firstInput = modalContent.querySelector('#player-name-0');
+        if (firstInput) firstInput.focus();
+        
+        modalBackdrop.style.display = 'flex';
     }
     
-    function showResetModal() {
-        modalContent.innerHTML = `
-            <h3>Recommencer ?</h3>
-            <p>Cela remettra tous les scores à zéro.</p>
-            <div class="modal-buttons">
-                <button id="cancel-reset-btn" class="modal-btn">Annuler</button>
-                <button id="confirm-reset-btn" class="modal-btn primary">Reset</button>
-            </div>
-        `;
-        modalBackdrop.style.display = 'flex';
-        document.getElementById('confirm-reset-btn').onclick = () => {
-            // On conserve le nombre de joueurs ET les noms
-            const count = playerCount;
-            const names = players.map(p => p.name);
-            players = Array.from({ length: 4 }, (_, i) => createPlayer(i + 1));
-            for (let i = 0; i < count; i++) {
-                players[i].name = names[i] || `Joueur ${i + 1}`;
+    function savePlayerNames() {
+        for (let i = 0; i < playerCount; i++) {
+            const input = document.getElementById(`player-name-${i}`);
+            if (input) {
+                const value = input.value.trim();
+                const defaultValue = `Joueur ${i + 1}`;
+                
+                // Use custom name if provided and different from default, otherwise use default
+                if (value && value !== defaultValue) {
+                    players[i].name = value;
+                } else {
+                    players[i].name = defaultValue;
+                }
             }
-            currentPlayerIndex = 0;
-            playerCount = count;
-            playerCountText.textContent = `${count} joueur${count > 1 ? 's' : ''}`;
-            modalBackdrop.style.display = 'none';
-            localStorage.removeItem('mbornes-settings');
-            updateUI();
-        };
-        document.getElementById('cancel-reset-btn').onclick = () => modalBackdrop.style.display = 'none';
+        }
+        updateTabBar();
+        saveSettings();
+        closeModal();
+    }
+    
+    function resetPlayerNames() {
+        for (let i = 0; i < playerCount; i++) {
+            const input = document.getElementById(`player-name-${i}`);
+            if (input) {
+                input.value = `Joueur ${i + 1}`;
+                input.style.color = '#999'; // Style par défaut
+                players[i].name = `Joueur ${i + 1}`;
+            }
+        }
     }
 
-    // --- EVENT LISTENERS ---
-    if (gameBoard) {
-        let touchStartX = 0;
-        let touchEndX = 0;
-        
-        gameBoard.addEventListener('touchstart', (e) => {
-            touchStartX = e.changedTouches[0].screenX;
-        });
-
-        gameBoard.addEventListener('touchend', (e) => {
-            touchEndX = e.changedTouches[0].screenX;
-            const swipeDistance = touchEndX - touchStartX;
-            
-            // Minimum de distance pour considérer que c'est un swipe
-            if (Math.abs(swipeDistance) > 50) {
-                if (swipeDistance > 0) {
-                    // Swipe vers la droite -> joueur précédent
-                    changePlayer(-1);
-                } else {
-                    // Swipe vers la gauche -> joueur suivant
-                    changePlayer(1);
+    // --- SETTINGS MANAGEMENT ---
+    function saveSettings() {
+        const settings = {
+            playerCount: playerCount,
+            playerNames: players.slice(0, playerCount).map(p => p.name)
+        };
+        localStorage.setItem('mbornes-settings', JSON.stringify(settings));
+    }
+    
+    function loadSettings() {
+        try {
+            const settingsJson = localStorage.getItem('mbornes-settings');
+            if (settingsJson) {
+                const settings = JSON.parse(settingsJson);
+                if (settings && settings.playerCount) {
+                    playerCount = settings.playerCount;
+                    
+                    if (settings.playerNames) {
+                        for (let i = 0; i < Math.min(playerCount, players.length); i++) {
+                            if (players[i]) {
+                                players[i].name = settings.playerNames[i] || `Joueur ${i + 1}`;
+                            }
+                        }
+                    }
                 }
             }
-        });
-
-        gameBoard.addEventListener('click', handleCardAction);
-        
-        // Permet l'ajout d'une carte en cliquant sur un placeholder ou une carte (si possible)
-        gameBoard.addEventListener('click', function(e) {
-            // Cible le placeholder ou la carte
-            const placeholder = e.target.closest('.card-placeholder');
-            const card = e.target.closest('.card');
-            let row, addBtn;
-
-            if (placeholder && placeholder.style.opacity !== '0') {
-                row = placeholder.closest('.card-row');
-            } else if (card) {
-                row = card.closest('.card-row');
-            } else {
-                return;
-            }
-
-            if (!row) return;
-            addBtn = row.querySelector('button[data-action="add"]');
-            if (!addBtn || addBtn.disabled) return;
-            addBtn.click();
-        });
-
-
-
-        // Navigation par clic sur la tab-barre
-        const tabBarList = document.querySelector('.tab-bar-list');
-        if (tabBarList) {
-            tabBarList.addEventListener('click', (e) => {
-                const li = e.target.closest('.tab-bar-item');
-                if (!li) return;
-                const index = Array.from(tabBarList.children).indexOf(li);
-                if (index !== -1 && index < playerCount) {
-                    currentPlayerIndex = index;
-                    updateUI();
-                }
-            });
+        } catch (e) {
+            console.warn('Erreur lors du chargement des settings:', e);
         }
-        resetButton.addEventListener('click', showResetModal);
-        dropdownContent.addEventListener('click', (e) => {
-            e.preventDefault();
-            if (e.target.tagName === 'A') {
-                setPlayerCount(parseInt(e.target.dataset.players));
-                dropdown.classList.remove('open'); // Ferme le menu
-            }
-        });
-        // Ajout : ouverture/fermeture du menu au clic
-        document.getElementById('player-dropdown-button').addEventListener('click', (e) => {
-            e.stopPropagation();
-            dropdown.classList.toggle('open');
-        });
-        // Ferme le menu si clic ailleurs
-        document.addEventListener('click', (e) => {
-            if (!dropdown.contains(e.target)) {
-                dropdown.classList.remove('open');
-            }
-        });
+    }
 
-        // --- START ---
-        initGame();
-
-        // Injection dynamique du script confetti si absent
-        if (!window.confetti) {
-            const confettiScript = document.createElement('script');
-            confettiScript.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js';
-            confettiScript.async = true;
-            document.head.appendChild(confettiScript);
-        }
+    // --- START ---
+    init();
+    loadSettings(); // Load saved settings first
+    addEventListeners();
+    addTabBarEventListeners();
+    updateUI();
+    updateTabBar();
+    
+    // Update UI with loaded settings
+    const playerCountText = document.getElementById('player-count-text');
+    if (playerCountText) {
+        playerCountText.textContent = `${playerCount} joueur${playerCount > 1 ? 's' : ''}`;
+    }
+    
+    const playerNav = document.getElementById('player-nav');
+    if (playerNav) {
+        playerNav.style.display = playerCount > 1 ? 'flex' : 'none';
+    }
+    
+    // Load confetti library if not present
+    if (!window.confetti) {
+        const confettiScript = document.createElement('script');
+        confettiScript.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js';
+        confettiScript.async = true;
+        document.head.appendChild(confettiScript);
     }
 });
