@@ -55,7 +55,7 @@ body {
     display: flex;
     justify-content: space-evenly;
     align-items: center;
-    gap: 28px;
+    gap: 12px;
     list-style: none;
     padding: 0 3%;
     margin: 0;
@@ -67,7 +67,7 @@ body {
     cursor: pointer;
     transition: color 0.2s;
     position: relative;
-    border: var(--Light-blue) 2px solid;
+    border: var(--Light-blue) 1px solid;
     border-radius: 8px;
     background: none;
     padding: 8px 12px;
@@ -80,17 +80,13 @@ body {
     overflow: hidden;
 }
 .tab-bar-item.active {
-    border: none;
+    border: var(--bg-board) 1px solid  ;
     white-space: none;
     overflow: none !important;
     text-overflow: none !important;
 }
 
-.tab-bar-item.active .tab-bar-label {
-    color: #F7FA8A;
-    font-weight: bold;
-    font-size: 22px;
-}
+
 .tab-bar-label {
     color: var(--Light-blue);
     font-size: 18px;
@@ -106,7 +102,7 @@ body {
 .tab-bar-label.active {
     color: #F7FA8A;
     font-weight: bold;
-    font-size: 22px;
+    font-size: 20px;
     white-space: nowrap;
     overflow: none !important;
     text-overflow: none !important;
@@ -118,25 +114,25 @@ body {
     align-items: center;
     justify-content: center;
     margin-right: 8px;
+    width: 18px;
+    height: 18px;
 }
 .progress-circle.active {
-    width: 16px;
-    height: 16px;
     margin-right: 12px;
 }
-.progress-circle:not(.active) {
-    width: 14px;
-    height: 14px;
-}
 .tab-bar-item .progress {
+    width: 18px;
+    height: 18px;
     transition: stroke-dashoffset 0.4s cubic-bezier(.4,0,.2,1), stroke 0.2s;
+    stroke-width: 1px
 }
 .tab-bar-item.active .progress {
-    stroke: #F7FA8A !important;
+    stroke: var(--bg-board) !important;
+
 }
 .tab-bar-item:not(.active) .progress {
     stroke: var(--Light-blue) !important;
-    opacity: 0.7;
+
 }
 
 /* --- Progress Bar --- */
@@ -146,9 +142,10 @@ body {
     flex-shrink: 0;
 }
 .progress-track {
-    background-color: #4B5563;
-    height: 30px;
-    border-radius: 8px;
+    background-color: #ffffff;
+    height: 40px;
+    border: #9197a3 2px solid;
+    border-radius: 20px;
     position: relative;
 }
 .progress-track::after {
@@ -160,7 +157,7 @@ body {
     height: 3px;
     background: repeating-linear-gradient(
         to right,
-        #fff 0 10px,
+        #6B7280 0 10px,
         transparent 10px 22px
     );
     opacity: 0.6;
@@ -174,7 +171,7 @@ body {
     transform: translate(-50%, -50%);
     width: 80px;
     height: 40px;
-    background-color: var(--bg-dark-grey);
+    background-color: #4c7dc3;
     background-image: url('assets/images/Car.png');
     background-repeat: no-repeat;
     background-size: cover;
@@ -188,6 +185,7 @@ body {
     font-size: 24px;
     font-weight: bold;
     color: var(--text-light);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
     transition: left 0.5s ease;
     z-index: 2;
 }
@@ -196,20 +194,34 @@ body {
     transition: none !important;
 }
 .progress-bubble.arrival {
-    background-color: #07a240 !important;
+    background-color: #0d7787 !important;
     border-color: #E1ED76 !important;
     color: #fff !important;
     box-shadow: 0 0 4px 4px rgba(225,237,118,0.5), 0 0 4px 4px rgba(225,237,118,0.5);
-    filter: drop-shadow(0 0 8px #22c55e);
+    filter: drop-shadow(0 0 8px #0e8b3c);
     animation: arrival-glow 1.2s ease-in-out infinite alternate;
 }
 .progress-arrival-flag {
     position: absolute;
-    right: 3px;
+    right: 9px;
     top: 50%;
     transform: translateY(-50%);
     width: 24px;
     height: 24px;
+}
+
+/* --- Game Container --- */
+.game-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    transition: transform 0.5s cubic-bezier(.77,0,.18,1);
+    will-change: transform;
+    border-radius: 24px 24px 12px 12px ;
+    margin: 10px 10px 50px 10px;
+    background-color: var(--card-bg2);
 }
 
 /* --- Game Board --- */
@@ -225,10 +237,10 @@ body {
 .game-board {
     flex: 1 1 0;
     min-height: 0;
+    border-top: #333 solid 2px;
     background-color: var(--bg-board);
-    border-radius: 24px 24px 12px 12px ;
+    box-shadow: inset 0 14px 8px -8px rgba(0, 0, 0, 0.2);
     padding: 16px;
-    margin: 0px 10px 50px 10px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -618,24 +630,10 @@ body {
     fill: #000;
 }
 
+
+
+
 /* --- Divers --- */
 .card-row:first-child .card-track .card-placeholder:nth-child(n+3) {
     visibility: hidden;
-}
-.game-board,
-.player-nav,
-.progress-section {
-    transition: none !important;
-    will-change: auto;
-}
-.game-board.slide-left,
-.player-nav.slide-left,
-.progress-section.slide-left,
-.game-board.slide-right,
-.player-nav.slide-right,
-.progress-section.slide-right,
-.game-board.slide-reset,
-.player-nav.slide-reset,
-.progress-section.slide-reset {
-    transform: none !important;
 }

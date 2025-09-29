@@ -181,7 +181,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     percent = Math.min(playerData.score / 1000, 1);
                     dasharray = 25;
                     dashoffset = 25 - Math.round(25 * percent);
-                    svg = `<svg width="14" height="14" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" stroke="#2a2a2a" stroke-width="1" fill="none" /><circle class="progress" cx="5" cy="5" r="4" stroke="#72C4FE" stroke-width="1" fill="none" stroke-dasharray="25" stroke-dashoffset="${dashoffset}" /></svg>`;
+                    svg = `<svg width="14" height="14" viewBox="0 0 10 10">
+                        <circle cx="5" cy="5" r="4" stroke="#2a2a2a" stroke-width="1" fill="none" />
+                        <circle class="progress" cx="5" cy="5" r="4" stroke="#72C4FE" stroke-width="1" fill="none" stroke-dasharray="25" stroke-dashoffset="${dashoffset}" />
+                    </svg>`;
                     circleClass = 'progress-circle';
                     labelClass = 'tab-bar-label';
                 }
