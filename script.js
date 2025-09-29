@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-
     // --- STATE MANAGEMENT ---
     let playerCount = 1;
     let currentPlayerIndex = 0;
@@ -26,7 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalBackdrop = document.getElementById('modal-backdrop');
     const modalContent = document.getElementById('modal-content');
     const resetButton = document.getElementById('reset-btn');
-    // Ajout de la classe secondary pour le danger secondaire
     resetButton.classList.add('secondary');
 
     // --- INITIALIZATION ---
@@ -53,33 +51,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- UI UPDATE ---
 
-    function updateUI(slideDirection) {
+    function updateUI() {
         const player = players[currentPlayerIndex];
-
-        // Animation carrousel si multijoueur
-        if (playerCount > 1 && typeof slideDirection === 'string') {
-            [gameBoard, playerNav, document.querySelector('.progress-section')].forEach(el => {
-                if (!el) return;
-                el.classList.remove('slide-left', 'slide-right', 'slide-reset');
-                void el.offsetWidth;
-                if (slideDirection === 'left') {
-                    el.classList.add('slide-left');
-                } else if (slideDirection === 'right') {
-                    el.classList.add('slide-right');
-                }
-                setTimeout(() => {
-                    el.classList.remove('slide-left', 'slide-right');
-                    el.classList.add('slide-reset');
-                }, 500);
-            });
-        }
-
-        // Progress Bubble : déplacement instantané si changement de joueur
-        if (typeof slideDirection === 'string') {
-            progressBubble.classList.add('no-anim');
-        } else {
-            progressBubble.classList.remove('no-anim');
-        }
 
         // Update Progress Bar
         const progressPercent = Math.min(player.score / 1000, 1) * 100;
@@ -107,57 +80,58 @@ document.addEventListener('DOMContentLoaded', () => {
             progressBubble._confettiDone = false;
         }
 
-        // Update Game Board for the current player
-        gameBoard.innerHTML = '';
+        // Update Game Board
+        if (gameBoard) {
+            gameBoard.innerHTML = '';
+            
+            CARD_DATA.forEach(cardInfo => {
+                const cardCount = player.cards[cardInfo.km];
+                const canAdd = !player.isWinner && (player.score + cardInfo.km <= 1000) && (!cardInfo.max || cardCount < cardInfo.max);
 
-        
-        CARD_DATA.forEach(cardInfo => {
-            const cardCount = player.cards[cardInfo.km];
-            const canAdd = !player.isWinner && (player.score + cardInfo.km <= 1000) && (!cardInfo.max || cardCount < cardInfo.max);
+                const row = document.createElement('div');
+                row.className = 'card-row';
 
-            const row = document.createElement('div');
-            row.className = 'card-row';
-
-            // Générer 10 emplacements (cartes ou placeholders)
-            let cardsHtml = '';
-            let maxPossible;
-            if (player.isWinner) {
-                maxPossible = 0;
-            } else if (cardInfo.km === 200) {
-                // Pour les 200, il faut aussi vérifier que le score restant permet d'en ajouter
-                const maxByScore = Math.floor((1000 - player.score) / 200);
-                maxPossible = Math.max(0, Math.min((cardInfo.max || 10) - cardCount, maxByScore));
-            } else {
-                maxPossible = cardInfo.max ? cardInfo.max - cardCount : Math.floor((1000 - player.score) / cardInfo.km);
-            }
-
-            for (let i = 0; i < 10; i++) {
-                if (i < cardCount) {
-                    cardsHtml += `
-                        <div class="card">
-                            <img src="assets/images/km-${cardInfo.km}.svg" class="km-value" alt="${cardInfo.km}">
-                            <img src="assets/images/${cardInfo.animal}" class="animal" alt="${cardInfo.animal}">
-                        </div>
-                    `;
+                // Générer 10 emplacements (cartes ou placeholders)
+                let cardsHtml = '';
+                let maxPossible;
+                if (player.isWinner) {
+                    maxPossible = 0;
+                } else if (cardInfo.km === 200) {
+                    // Pour les 200, il faut aussi vérifier que le score restant permet d'en ajouter
+                    const maxByScore = Math.floor((1000 - player.score) / 200);
+                    maxPossible = Math.max(0, Math.min((cardInfo.max || 10) - cardCount, maxByScore));
                 } else {
-                    // Placeholders visibles uniquement si on peut encore ajouter une carte à cet emplacement
-                    const placeholderOpacity = (i - cardCount < maxPossible) ? '' : ' style="opacity:0;"';
-                    cardsHtml += `<div class="card-placeholder"${placeholderOpacity}><img class="km-bg" src="assets/distance/distance-${cardInfo.km}.svg" alt="${cardInfo.km} km"></div>`;
+                    maxPossible = cardInfo.max ? cardInfo.max - cardCount : Math.floor((1000 - player.score) / cardInfo.km);
                 }
-            }
 
-            row.innerHTML = `
-                <button class="card-row-btn" data-action="remove" data-km="${cardInfo.km}" ${cardCount === 0 ? 'disabled' : ''}>-</button>
-                <div class="card-track">
-                    ${cardsHtml}
-                </div>
-                <div class="controls">
-                    <span class="count">${cardCount}</span>
-                    <button class="card-row-btn add" data-action="add" data-km="${cardInfo.km}" ${!canAdd ? 'disabled' : ''}>+</button>
-                </div>
-            `;
-            gameBoard.appendChild(row);
-        });
+                for (let i = 0; i < 10; i++) {
+                    if (i < cardCount) {
+                        cardsHtml += `
+                            <div class="card">
+                                <img src="assets/images/km-${cardInfo.km}.svg" class="km-value" alt="${cardInfo.km}">
+                                <img src="assets/images/${cardInfo.animal}" class="animal" alt="${cardInfo.animal}">
+                            </div>
+                        `;
+                    } else {
+                        // Placeholders visibles uniquement si on peut encore ajouter une carte à cet emplacement
+                        const placeholderOpacity = (i - cardCount < maxPossible) ? '' : ' style="opacity:0;"';
+                        cardsHtml += `<div class="card-placeholder"${placeholderOpacity}><img class="km-bg" src="assets/distance/distance-${cardInfo.km}.svg" alt="${cardInfo.km} km"></div>`;
+                    }
+                }
+
+                row.innerHTML = `
+                    <button class="card-row-btn" data-action="remove" data-km="${cardInfo.km}" ${cardCount === 0 ? 'disabled' : ''}>-</button>
+                    <div class="card-track">
+                        ${cardsHtml}
+                    </div>
+                    <div class="controls">
+                        <span class="count">${cardCount}</span>
+                        <button class="card-row-btn add" data-action="add" data-km="${cardInfo.km}" ${!canAdd ? 'disabled' : ''}>+</button>
+                    </div>
+                `;
+                gameBoard.appendChild(row);
+            });
+        }
 
         // Génération dynamique de la tab-barre joueurs
         const tabBarList = document.getElementById('tab-bar-list');
@@ -181,10 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     percent = Math.min(playerData.score / 1000, 1);
                     dasharray = 25;
                     dashoffset = 25 - Math.round(25 * percent);
-                    svg = `<svg width="14" height="14" viewBox="0 0 10 10">
-                        <circle cx="5" cy="5" r="4" stroke="#2a2a2a" stroke-width="1" fill="none" />
-                        <circle class="progress" cx="5" cy="5" r="4" stroke="#72C4FE" stroke-width="1" fill="none" stroke-dasharray="25" stroke-dashoffset="${dashoffset}" />
-                    </svg>`;
+                    svg = `<svg width="14" height="14" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" stroke="#2a2a2a" stroke-width="1" fill="none" /><circle class="progress" cx="5" cy="5" r="4" stroke="#72C4FE" stroke-width="1" fill="none" stroke-dasharray="25" stroke-dashoffset="${dashoffset}" /></svg>`;
                     circleClass = 'progress-circle';
                     labelClass = 'tab-bar-label';
                 }
@@ -237,21 +208,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- PLAYER MANAGEMENT ---
     function changePlayer(direction) {
-        const prevIndex = currentPlayerIndex;
-        const nextIndex = (currentPlayerIndex + direction + playerCount) % playerCount;
-        // Slide toujours de droite à gauche (le nouveau pousse l'ancien)
-        [gameBoard, playerNav, document.querySelector('.progress-section')].forEach(el => {
-            if (!el) return;
-            el.classList.remove('slide-left', 'slide-right', 'slide-reset');
-            void el.offsetWidth;
-            el.classList.add('slide-left');
-            setTimeout(() => {
-                el.classList.remove('slide-left', 'slide-right');
-                el.classList.add('slide-reset');
-                currentPlayerIndex = nextIndex;
-                updateUI();
-            }, 400);
-        });
+        if (playerCount <= 1) return;
+        
+        currentPlayerIndex = (currentPlayerIndex + direction + playerCount) % playerCount;
+        updateUI();
     }
 
     function setPlayerCount(count) {
@@ -362,72 +322,97 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- EVENT LISTENERS ---
-    gameBoard.addEventListener('click', handleCardAction);
-    
-// Permet l’ajout d’une carte en cliquant sur un placeholder ou une carte (si possible)
-gameBoard.addEventListener('click', function(e) {
-    // Cible le placeholder ou la carte
-    const placeholder = e.target.closest('.card-placeholder');
-    const card = e.target.closest('.card');
-    let row, addBtn;
+    if (gameBoard) {
+        let touchStartX = 0;
+        let touchEndX = 0;
+        
+        gameBoard.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
 
-    if (placeholder && placeholder.style.opacity !== '0') {
-        row = placeholder.closest('.card-row');
-    } else if (card) {
-        row = card.closest('.card-row');
-    } else {
-        return;
-    }
-
-    if (!row) return;
-    addBtn = row.querySelector('button[data-action="add"]');
-    if (!addBtn || addBtn.disabled) return;
-    addBtn.click();
-});
-
-
-
-    // Navigation par clic sur la tab-barre
-    const tabBarList = document.querySelector('.tab-bar-list');
-    if (tabBarList) {
-        tabBarList.addEventListener('click', (e) => {
-            const li = e.target.closest('.tab-bar-item');
-            if (!li) return;
-            const index = Array.from(tabBarList.children).indexOf(li);
-            if (index !== -1 && index < playerCount) {
-                currentPlayerIndex = index;
-                updateUI();
+        gameBoard.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            const swipeDistance = touchEndX - touchStartX;
+            
+            // Minimum de distance pour considérer que c'est un swipe
+            if (Math.abs(swipeDistance) > 50) {
+                if (swipeDistance > 0) {
+                    // Swipe vers la droite -> joueur précédent
+                    changePlayer(-1);
+                } else {
+                    // Swipe vers la gauche -> joueur suivant
+                    changePlayer(1);
+                }
             }
         });
-    }
-    resetButton.addEventListener('click', showResetModal);
-    dropdownContent.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (e.target.tagName === 'A') {
-            setPlayerCount(parseInt(e.target.dataset.players));
-            dropdown.classList.remove('open'); // Ferme le menu
-        }
-    });
-    // Ajout : ouverture/fermeture du menu au clic
-    document.getElementById('player-dropdown-button').addEventListener('click', (e) => {
-        e.stopPropagation();
-        dropdown.classList.toggle('open');
-    });
-    // Ferme le menu si clic ailleurs
-    document.addEventListener('click', (e) => {
-        if (!dropdown.contains(e.target)) {
-            dropdown.classList.remove('open');
-        }
-    });
 
-    // --- START ---
-    initGame();
+        gameBoard.addEventListener('click', handleCardAction);
+        
+        // Permet l'ajout d'une carte en cliquant sur un placeholder ou une carte (si possible)
+        gameBoard.addEventListener('click', function(e) {
+            // Cible le placeholder ou la carte
+            const placeholder = e.target.closest('.card-placeholder');
+            const card = e.target.closest('.card');
+            let row, addBtn;
 
-    // Injection dynamique du script confetti si absent
-    if (!window.confetti) {
-        const confettiScript = document.createElement('script');
-        confettiScript.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js';
-        confettiScript.async = true;
-        document.head.appendChild(confettiScript);
+            if (placeholder && placeholder.style.opacity !== '0') {
+                row = placeholder.closest('.card-row');
+            } else if (card) {
+                row = card.closest('.card-row');
+            } else {
+                return;
+            }
+
+            if (!row) return;
+            addBtn = row.querySelector('button[data-action="add"]');
+            if (!addBtn || addBtn.disabled) return;
+            addBtn.click();
+        });
+
+
+
+        // Navigation par clic sur la tab-barre
+        const tabBarList = document.querySelector('.tab-bar-list');
+        if (tabBarList) {
+            tabBarList.addEventListener('click', (e) => {
+                const li = e.target.closest('.tab-bar-item');
+                if (!li) return;
+                const index = Array.from(tabBarList.children).indexOf(li);
+                if (index !== -1 && index < playerCount) {
+                    currentPlayerIndex = index;
+                    updateUI();
+                }
+            });
+        }
+        resetButton.addEventListener('click', showResetModal);
+        dropdownContent.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (e.target.tagName === 'A') {
+                setPlayerCount(parseInt(e.target.dataset.players));
+                dropdown.classList.remove('open'); // Ferme le menu
+            }
+        });
+        // Ajout : ouverture/fermeture du menu au clic
+        document.getElementById('player-dropdown-button').addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdown.classList.toggle('open');
+        });
+        // Ferme le menu si clic ailleurs
+        document.addEventListener('click', (e) => {
+            if (!dropdown.contains(e.target)) {
+                dropdown.classList.remove('open');
+            }
+        });
+
+        // --- START ---
+        initGame();
+
+        // Injection dynamique du script confetti si absent
+        if (!window.confetti) {
+            const confettiScript = document.createElement('script');
+            confettiScript.src = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js';
+            confettiScript.async = true;
+            document.head.appendChild(confettiScript);
+        }
     }
 });
