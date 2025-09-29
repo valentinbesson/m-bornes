@@ -116,23 +116,29 @@ body {
     margin-right: 8px;
     width: 18px;
     height: 18px;
- 
+    background: #343940;
+    border-radius: 50%;
+    border: #343940 2px solid;
 }
 .progress-circle.active {
     margin-right: 12px;
+ 
 }
 .tab-bar-item .progress {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
     transition: stroke-dashoffset 0.4s cubic-bezier(.4,0,.2,1), stroke 0.2s;
-    stroke-width: 1px
+
 }
 .tab-bar-item.active .progress {
     stroke: var(--bg-board) !important;
 
+
+
 }
 .tab-bar-item:not(.active) .progress {
-    stroke: var(--Light-blue) !important;
+    stroke: var(--Light-blue-plus) !important;
+
 
 }
 
