@@ -889,3 +889,38 @@ document.addEventListener('DOMContentLoaded', () => {
         document.head.appendChild(confettiScript);
     }
 });
+
+// --- PWA SERVICE WORKER REGISTRATION ---
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+            .then((registration) => {
+                console.log('[PWA] Service Worker enregistré avec succès:', registration.scope);
+                
+                // Vérifier les mises à jour
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    if (newWorker) {
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                console.log('[PWA] Nouvelle version disponible!');
+                                // Optionnel : afficher une notification de mise à jour
+                                if (confirm('Une nouvelle version de l\'application est disponible. Voulez-vous la charger ?')) {
+                                    newWorker.postMessage({ type: 'SKIP_WAITING' });
+                                    window.location.reload();
+                                }
+                            }
+                        });
+                    }
+                });
+            })
+            .catch((error) => {
+                console.error('[PWA] Erreur lors de l\'enregistrement du Service Worker:', error);
+            });
+    });
+
+    // Recharger la page quand un nouveau service worker prend le contrôle
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        window.location.reload();
+    });
+}
