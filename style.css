@@ -369,20 +369,51 @@ body {
     padding: 20px 0 20px 0;
     height: 100%;
     overflow: hidden; /* Empêche les cartes de déborder */
+    position: relative;
+}
+
+.placeholders-container,
+.cards-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 20px 0;
+}
+
+.placeholders-container {
+    z-index: 1;
+    flex-direction: row-reverse; /* Placeholders stackés à droite comme les cartes */
+    justify-content: flex-start;
+}
+
+.cards-container {
+    z-index: 2;
+    flex-direction: row-reverse; /* Cartes partent de la droite dans l'ordre normal */
+    justify-content: flex-start;
 }
 .card,
-.card-placeholder {
+.card-placeholder,
+.card-slot {
     flex: 1 1 0;
     min-width: 0;
     width: auto;
-    /* max-width: 90px; */
     height: 100%;
     min-height: 60px;
     max-height: 180px;
     border-radius: 8px;
-    transition: margin 0.3s ease;
+    transition: margin 0.3s ease, opacity 0.3s ease;
     position: relative;
     box-sizing: border-box;
+    /* Assurer que les cartes et placeholders ont exactement la même taille */
+    flex-basis: 0;
+    flex-grow: 1;
+    flex-shrink: 1;
 }
 .card {
     background-color: var(--card-bg2);
@@ -416,9 +447,47 @@ body {
     max-height: 80%;
     max-width: 80%;
 }
+
+/* Masquer l'illustration sur toutes les cartes sauf les premières à droite */
+.card-placeholder:not(:nth-child(1)) img.km-bg {
+    display: none;
+}
+
+/* Inverser l'ordre z-index des placeholders pour qu'ils soient stackés dans l'ordre inverse */
+.placeholders-container .card-placeholder:nth-child(1) { z-index: 10; }
+.placeholders-container .card-placeholder:nth-child(2) { z-index: 9; }
+.placeholders-container .card-placeholder:nth-child(3) { z-index: 8; }
+.placeholders-container .card-placeholder:nth-child(4) { z-index: 7; }
+.placeholders-container .card-placeholder:nth-child(5) { z-index: 6; }
+.placeholders-container .card-placeholder:nth-child(6) { z-index: 5; }
+.placeholders-container .card-placeholder:nth-child(7) { z-index: 4; }
+.placeholders-container .card-placeholder:nth-child(8) { z-index: 3; }
+.placeholders-container .card-placeholder:nth-child(9) { z-index: 2; }
+.placeholders-container .card-placeholder:nth-child(10) { z-index: 1; }
+
+/* Style pour les slots de cartes */
+.card-slot {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.card-slot .card {
+    width: 100%;
+    height: 100%;
+}
+
+/* Marges pour l'overlap des éléments */
 .card-track .card:not(:first-child),
-.card-track .card-placeholder:not(:first-child) {
+.card-track .card-placeholder:not(:first-child),
+.placeholders-container .card-placeholder:not(:first-child),
+.cards-container .card-slot:not(:first-child) {
     margin-right: calc(-1 * min(40px, 4vw));
+}
+
+/* Alignement des placeholders identique aux cartes */
+.placeholders-container .card-placeholder:not(:first-child) {
+    margin-right: calc(-1 * min(40px, 4vw));
+    margin-left: 0;
 }
 .card img.km-value { height: 30px; }
 .card img.animal { width: 40px; height: 40px; }
@@ -714,6 +783,6 @@ body {
 
 
 /* --- Divers --- */
-.card-row:first-child .card-track .card-placeholder:nth-child(n+3) {
+.card-row:first-child .placeholders-container .card-placeholder:nth-child(n+3) {
     visibility: hidden;
 }

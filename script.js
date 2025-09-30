@@ -49,24 +49,34 @@ document.addEventListener('DOMContentLoaded', () => {
                     </section>
                     <main class="game-board-slider">
                         <div id="game-board-${playerIndex}" class="game-board">
-                            ${CARD_DATA.map(card => `
-                                <div class="card-row">
+                            ${CARD_DATA.map(card => {
+                                const visiblePlaceholders = card.max || 10; // 2 pour les 200km, 10 pour les autres
+                                const totalSlots = 10; // Toujours 10 slots pour toutes les cartes
+                                return `
+                                <div class="card-row" data-card-type="${card.km}">
                                     <div class="controls-left">
                                         <button class="card-row-btn" data-km="${card.km}" data-player="${playerIndex}" disabled>-</button>
                                     </div>
                                     <div class="card-track">
-                                        ${Array(10).fill().map((_, i) => `
-                                            <div class="card-placeholder" style="z-index: ${1 - (i * 0.1)};">
-                                                <img class="km-bg" src="assets/distance/distance-${card.km}.svg" alt="${card.km} km">
-                                            </div>
-                                        `).join('')}
+                                        <div class="placeholders-container">
+                                            ${Array(totalSlots).fill().map((_, i) => `
+                                                <div class="card-placeholder" ${i >= visiblePlaceholders ? 'style="visibility: hidden;"' : ''}>
+                                                    <img class="km-bg" src="assets/distance/distance-${card.km}.svg" alt="${card.km} km">
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                        <div class="cards-container">
+                                            ${Array(totalSlots).fill().map((_, i) => `
+                                                <div class="card-slot" data-slot="${i}"></div>
+                                            `).join('')}
+                                        </div>
                                     </div>
                                     <div class="controls">
                                         <span class="count">0</span>
                                         <button class="card-row-btn add" data-km="${card.km}" data-player="${playerIndex}">+</button>
                                     </div>
                                 </div>
-                            `).join('')}
+                            `}).join('')}
                         </div>
                     </main>
                 `;
@@ -190,26 +200,48 @@ document.addEventListener('DOMContentLoaded', () => {
             // Update cards display
             const cardTrack = row.querySelector('.card-track');
             if (cardTrack) {
-                cardTrack.innerHTML = '';
-                for (let i = 0; i < 10; i++) {
-                    if (i < cardCount) {
-                        cardTrack.innerHTML += `
-                            <div class="card">
-                                <img src="assets/images/km-${cardInfo.km}.svg" class="km-value" alt="${cardInfo.km}">
-                                <img src="assets/images/${cardInfo.animal}" class="animal" alt="${cardInfo.animal}">
-                            </div>
-                        `;
-                    } else {
-                        const maxPossible = cardInfo.max ? cardInfo.max - cardCount : Math.floor((1000 - player.score) / cardInfo.km);
-                        const placeholderOpacity = (i - cardCount < maxPossible) ? '' : ' style="opacity:0;"';
-                        const zIndex = 1 - (i * 0.1); // Z-index décroissant mais inférieur aux cartes (z-index: 2)
-                        const styles = `z-index: ${zIndex};${placeholderOpacity ? placeholderOpacity.replace(' style="', '').replace('"', '') : ''}`;
-                        cardTrack.innerHTML += `
-                            <div class="card-placeholder" style="${styles}">
-                                <img class="km-bg" src="assets/distance/distance-${cardInfo.km}.svg" alt="${cardInfo.km} km">
-                            </div>
-                        `;
-                    }
+                const placeholdersContainer = cardTrack.querySelector('.placeholders-container');
+                const cardsContainer = cardTrack.querySelector('.cards-container');
+                
+                if (placeholdersContainer && cardsContainer) {
+                    // Update placeholders visibility
+                    const placeholders = placeholdersContainer.querySelectorAll('.card-placeholder');
+                    const maxCards = cardInfo.max || 10;
+                    const visiblePlaceholders = cardInfo.max || 10;
+                    const maxPossible = cardInfo.max ? cardInfo.max - cardCount : Math.floor((1000 - player.score) / cardInfo.km);
+                    
+                    placeholders.forEach((placeholder, i) => {
+                        // Pour les cartes 200km, seuls les 2 premiers placeholders sont visibles
+                        if (i >= visiblePlaceholders) {
+                            placeholder.style.visibility = 'hidden';
+                        } else {
+                            placeholder.style.visibility = 'visible';
+                            if (i < maxPossible + cardCount) {
+                                placeholder.style.opacity = '1';
+                            } else {
+                                placeholder.style.opacity = '0';
+                            }
+                        }
+                    });
+                    
+                    // Update card slots
+                    const cardSlots = cardsContainer.querySelectorAll('.card-slot');
+                    cardSlots.forEach((slot, i) => {
+                        if (i < cardCount) {
+                            // Afficher la carte dans ce slot
+                            slot.innerHTML = `
+                                <div class="card">
+                                    <img src="assets/images/km-${cardInfo.km}.svg" class="km-value" alt="${cardInfo.km}">
+                                    <img src="assets/images/${cardInfo.animal}" class="animal" alt="${cardInfo.animal}">
+                                </div>
+                            `;
+                            slot.style.opacity = '1';
+                        } else {
+                            // Slot vide
+                            slot.innerHTML = '';
+                            slot.style.opacity = '0';
+                        }
+                    });
                 }
             }
         });
@@ -551,11 +583,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Gestion des clics sur cartes et placeholders (pour ajouter)
+            // Gestion des clics sur cartes, placeholders et conteneur de cartes (pour ajouter)
             const card = e.target.closest('.card');
             const placeholder = e.target.closest('.card-placeholder');
+            const cardsContainer = e.target.closest('.cards-container');
+            const cardSlot = e.target.closest('.card-slot');
 
-            if (card || placeholder) {
+            if (card || placeholder || cardsContainer || cardSlot) {
                 const cardRow = e.target.closest('.card-row');
                 if (!cardRow) {
                     isProcessingClick = false;
