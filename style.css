@@ -1,11 +1,14 @@
+/* ========================================
+   VARIABLES GLOBALES
+   ======================================== */
 :root {
     --bg-dark: #000000;
     --bg-dark-grey: #4B5563;
     --bg-board: #E1ED76;
     --primary-blue: #2563EB;
     --primary-blue-hover: #1D4ED8;
-    --Light-blue: #3399ff;
-    --Light-blue-plus: #72C4FE;
+    --light-blue: #3399ff;
+    --light-blue-plus: #72C4FE;
     --card-bg: #FFFFFF;
     --card-bg2: #ebf4fe;
     --card-placeholder-bg: #E1ED76;
@@ -16,6 +19,9 @@
     --danger-red-hover: #d80303;
 }
 
+/* ========================================
+   RESET & BASE STYLES
+   ======================================== */
 * {
     margin: 0;
     padding: 0;
@@ -38,7 +44,93 @@ body {
     background-color: var(--bg-dark);
 }
 
-/* --- Tab-bar joueurs --- */
+/* ========================================
+   HEADER & NAVIGATION
+   ======================================== */
+.header {
+    padding: 12px 20px;
+    display: flex;
+    border-bottom: 1px solid #333;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+/* Player Dropdown */
+.player-dropdown {
+    position: relative;
+}
+
+.player-dropdown-button {
+    background: none;
+    border: 1px solid var(--primary-blue);
+    border-radius: 8px;
+    padding: 8px 16px;
+    color: var(--primary-blue);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s;
+}
+
+.player-dropdown-button:hover {
+    background-color: var(--primary-blue-hover);
+}
+
+.player-dropdown-button img {
+    width: 23px;
+    height: 23px;
+    fill: var(--primary-blue);
+}
+
+.player-dropdown-button:hover img {
+    fill: var(--primary-blue-hover);
+}
+
+.player-dropdown-content {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: var(--card-bg);
+    color: var(--text-dark);
+    min-width: 100%;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    border-radius: 12px;
+    padding: 8px 0;
+    z-index: 100;
+}
+
+.player-dropdown.open .player-dropdown-content {
+    display: block;
+}
+
+.player-dropdown-content a {
+    background: none;
+    color: var(--text-dark);
+    font-size: 15px;
+    font-weight: 500;
+    padding: 10px 24px;
+    text-align: left;
+    border-radius: 8px;
+    margin: 2px 0;
+    transition: background 0.2s, color 0.2s;
+    display: block;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.player-dropdown-content a:hover {
+    background: var(--primary-blue);
+    color: var(--text-light);
+}
+
+/* ========================================
+   TAB BAR (NAVIGATION JOUEURS)
+   ======================================== */
 .tab-bar {
     width: 100%;
     display: flex;
@@ -47,10 +139,12 @@ body {
     border: none;
     padding: 0;
 }
+
 .tab-bar-nav {
     width: 100%;
     padding: 12px 0 0 0;
 }
+
 .tab-bar-list {
     display: flex;
     justify-content: space-evenly;
@@ -60,6 +154,7 @@ body {
     padding: 0 3%;
     margin: 0;
 }
+
 .tab-bar-item {
     display: flex;
     align-items: center;
@@ -67,48 +162,39 @@ body {
     cursor: pointer;
     transition: color 0.2s;
     position: relative;
-    border: var(--Light-blue) 1px solid;
+    border: var(--light-blue) 1px solid;
     border-radius: 8px;
     background: none;
     padding: 8px 12px;
     width: auto;
     min-width: unset;
     max-width: 100%;
-    box-sizing: border-box;
-    /* Empêche le retour à la ligne et tronque le texte si besoin */
     white-space: nowrap;
     overflow: hidden;
 }
+
 .tab-bar-item.active {
-    border: var(--bg-board) 1px solid  ;
-    white-space: none;
-    overflow: none !important;
-    text-overflow: none !important;
+    border: var(--bg-board) 1px solid;
 }
 
-
 .tab-bar-label {
-    color: var(--Light-blue);
+    color: var(--light-blue);
     font-size: 18px;
-    /* font-weight: 500; */
     letter-spacing: 0.5px;
     transition: color 0.2s, font-size 0.2s, font-weight 0.2s;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 120px; /* Ajuste selon la place voulue */
+    max-width: 120px;
     display: inline-block;
 }
+
 .tab-bar-label.active {
     color: #F7FA8A;
     font-weight: bold;
     font-size: 20px;
-    white-space: nowrap;
-    overflow: none !important;
-    text-overflow: none !important;
-    max-width: 120px; /* Même contrainte pour l'actif */
-    display: inline-block;
 }
+
 .progress-circle {
     display: flex;
     align-items: center;
@@ -120,34 +206,34 @@ body {
     border-radius: 50%;
     border: #39404a 2px solid;
 }
+
 .progress-circle.active {
     margin-right: 12px;
- 
 }
-.tab-bar-item .progress {
+
+.progress {
     width: 20px;
     height: 20px;
     transition: stroke-dashoffset 0.4s cubic-bezier(.4,0,.2,1), stroke 0.2s;
-
 }
+
 .tab-bar-item.active .progress {
-    stroke: var(--bg-board) !important;
-
-
-
+    stroke: var(--bg-board);
 }
+
 .tab-bar-item:not(.active) .progress {
-    stroke: var(--Light-blue-plus) !important;
-
-
+    stroke: var(--light-blue-plus);
 }
 
-/* --- Progress Bar --- */
+/* ========================================
+   PROGRESS BAR
+   ======================================== */
 .progress-section {
     padding: 16px;
     margin: 3px 10px 3px 50px;
     flex-shrink: 0;
 }
+
 .progress-track {
     background-color: #ffffff;
     height: 40px;
@@ -155,6 +241,7 @@ body {
     border-radius: 20px;
     position: relative;
 }
+
 .progress-track::after {
     content: '';
     position: absolute;
@@ -170,21 +257,21 @@ body {
     opacity: 0.6;
     z-index: 1;
     transform: translateY(-50%);
-    border-top: none;
 }
+
 .progress-bubble {
     position: absolute;
     top: 50%;
     transform: translate(-50%, -50%);
-    width: 80px;
-    height: 40px;
+    width: 90px;
+    height: 45px;
     background-color: #4c7dc3;
     background-image: url('assets/images/Car.png');
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
     border: 2px solid var(--text-light);
-    border-radius: 5px 15px 15px 5px ;
+    border-radius: 5px 15px 15px 5px;
     box-shadow: 4px 6px 10px rgba(0, 0, 0, 0.4);
     display: flex;
     align-items: center;
@@ -196,18 +283,20 @@ body {
     transition: left 0.5s ease;
     z-index: 4;
 }
-/* Progress Bubble States */
+
 .progress-bubble.no-anim {
     transition: none !important;
 }
+
 .progress-bubble.arrival {
     background-color: #0d7787 !important;
     border-color: #E1ED76 !important;
     color: #fff !important;
-    box-shadow: 0 0 4px 4px rgba(225,237,118,0.5), 0 0 4px 4px rgba(225,237,118,0.5);
+    box-shadow: 0 0 4px 4px rgba(225,237,118,0.5);
     filter: drop-shadow(0 0 8px #0e8b3c);
     animation: arrival-glow 1.2s ease-in-out infinite alternate;
 }
+
 .progress-arrival-flag {
     position: absolute;
     right: 9px;
@@ -219,54 +308,43 @@ body {
     z-index: 3;
 }
 
-/* --- Game Containers Wrapper --- */
+/* ========================================
+   GAME CONTAINERS
+   ======================================== */
 .game-containers-wrapper {
     flex: 1;
     overflow: hidden;
     position: relative;
     margin: 10px 10px 50px 10px;
-}
-
-.game-containers-wrapper .game-containers {
-    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Optimisations hardware acceleration */
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
 }
 
 .game-containers {
     display: flex;
     width: 400%; /* 4 joueurs max */
     height: 100%;
-    gap: 20px; /* Espacement de 20px entre les containers */
+    gap: 20px;
     transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    will-change: transform, width;
-    transform-style: preserve-3d;
+    will-change: transform;
     backface-visibility: hidden;
-    transform: translateZ(0); /* Force hardware acceleration */
-    /* Transition pour la largeur aussi */
-    transition-property: transform, width;
+    transform: translateZ(0);
 }
 
-/* Optimisation pour les animations fluides */
 .game-containers.animating {
     pointer-events: none;
     z-index: 10;
 }
 
-.game-containers * {
-    backface-visibility: hidden;
-    transform-style: preserve-3d;
-}
+/* Animations de slide pour changement de joueur */
+.game-containers.slide-to-player-0 { transform: translateX(0); }
+.game-containers.slide-to-player-1 { transform: translateX(calc(-25% - 20px)); }
+.game-containers.slide-to-player-2 { transform: translateX(calc(-50% - 40px)); }
+.game-containers.slide-to-player-3 { transform: translateX(calc(-75% - 60px)); }
 
-/* Amélioration de la fluidité */
-.game-containers-wrapper {
-    -webkit-transform: translate3d(0, 0, 0);
-    transform: translate3d(0, 0, 0);
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-}
-
-/* --- Game Container --- */
 .game-container {
-    flex: 0 0 25%; /* Chaque container prend 25% de la largeur totale */
+    flex: 0 0 25%;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -275,25 +353,9 @@ body {
     background-color: var(--card-bg2);
 }
 
-/* --- Animation de slide pour le changement de joueur --- */
-.game-containers.slide-to-player-0 {
-    transform: translateX(0);
-}
-
-.game-containers.slide-to-player-1 {
-    transform: translateX(calc(-25% - 20px));
-}
-
-.game-containers.slide-to-player-2 {
-    transform: translateX(calc(-50% - 40px));
-}
-
-.game-containers.slide-to-player-3 {
-    transform: translateX(calc(-75% - 60px));
-}
-
-
-/* --- Game Board --- */
+/* ========================================
+   GAME BOARD
+   ======================================== */
 .game-board-slider {
     position: relative;
     overflow: hidden;
@@ -303,6 +365,7 @@ body {
     display: flex;
     flex-direction: column;
 }
+
 .game-board {
     flex: 1 1 0;
     min-height: 0;
@@ -317,6 +380,7 @@ body {
     transition: transform 0.5s cubic-bezier(.77,0,.18,1);
     will-change: transform;
 }
+
 .card-row {
     display: flex;
     align-items: center;
@@ -324,8 +388,38 @@ body {
     flex: 1 1 0;
     min-height: 0;
 }
+
+/* ========================================
+   CONTROLES ET BOUTONS
+   ======================================== */
+.controls-left {
+    display: flex;
+    align-items: center;
+    padding: 4px 4px 4px 12px;
+    flex-shrink: 0;
+}
+
+.controls {
+    display: flex;
+    align-items: center;
+    border-radius: 20px 0px 0px 20px;
+    background-color: var(--card-bg);
+    box-shadow: #00000050 0px 2px 8px;
+    padding: 5px 8px 5px 5px;
+    flex-shrink: 0;
+}
+
+.controls .count {
+    color: var(--bg-dark-grey);
+    font-weight: bold;
+    font-size: 16px;
+    min-width: 33px;
+    text-align: center;
+}
+
+/* Boutons de rangée (+ et -) */
 .card-row-btn {
-    background: #ffffff00;
+    background: transparent;
     border: 2px solid var(--danger-red);
     color: var(--danger-red);
     width: 36px;
@@ -337,27 +431,51 @@ body {
     transition: all 0.2s;
     flex-shrink: 0;
 }
+
 .card-row-btn:disabled {
-    background-color: #f3f4f600;
-    border-color: var(--danger-red);
-    color: var(--danger-red);
     opacity: 0.3;
     cursor: not-allowed;
 }
+
 .card-row-btn.add {
     border-color: var(--primary-blue);
-    background-color: #f3f4f600;
     color: var(--primary-blue);
 }
 
-
 .card-row-btn.add:disabled {
-    background-color: #dbeafe00;
     border-color: var(--primary-blue);
     color: var(--primary-blue);
     opacity: 0.3;
     cursor: not-allowed;
 }
+
+/* Bouton icône générique */
+.icon-btn {
+    background: var(--primary-blue);
+    border: none;
+    border-radius: 8px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.icon-btn:hover {
+    background-color: var(--primary-blue-hover);
+}
+
+.icon-btn img {
+    width: 22px;
+    height: 22px;
+    filter: invert(1) brightness(2);
+}
+
+/* ========================================
+   CARTES ET PLACEHOLDERS
+   ======================================== */
 .card-track {
     flex: 1 1 0;
     display: flex;
@@ -365,9 +483,8 @@ body {
     justify-content: flex-start;
     align-items: center;
     min-height: 0;
-    padding: 20px 0 20px 0;
+    padding: 20px 0;
     height: 100%;
-    /* overflow: hidden; Empêche les cartes de déborder */
     position: relative;
 }
 
@@ -387,15 +504,13 @@ body {
 
 .placeholders-container {
     z-index: 1;
-    flex-direction: row-reverse; /* Placeholders stackés à droite comme les cartes */
-    justify-content: flex-start;
 }
 
 .cards-container {
     z-index: 2;
-    flex-direction: row-reverse; /* Cartes partent de la droite dans l'ordre normal */
-    justify-content: flex-start;
 }
+
+/* Éléments de carte communs */
 .card,
 .card-placeholder,
 .card-slot {
@@ -405,14 +520,14 @@ body {
     height: 100%;
     max-height: 300px;
     border-radius: 8px;
-    transition: margin 0.3s ease, opacity 0.3s ease;
+    transition: none;
     position: relative;
     box-sizing: border-box;
-    /* Assurer que les cartes et placeholders ont exactement la même taille */
     flex-basis: 0;
     flex-grow: 1;
     flex-shrink: 1;
 }
+
 .card {
     background-color: var(--card-bg2);
     border: 4px solid var(--card-bg);
@@ -421,37 +536,68 @@ body {
     align-items: center;
     justify-content: space-around;
     padding: 3px;
-    position: relative;
     z-index: 2;
 }
+
 .card-placeholder {
     border: 2px dashed var(--card-placeholder-border);
     background: var(--card-placeholder-bg);
-    position: relative;
     z-index: 1;
     overflow: hidden;
 }
-.card-placeholder img.km-bg {
+
+.card-slot {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.card-slot .card {
+    width: 100%;
+    height: 100%;
+}
+
+/* Images dans les cartes */
+/* Images dans les cartes (optimisé) */
+.card img,
+.card-placeholder img {
     position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 70%;
-    height: auto;
     transform: translate(-50%, -50%);
-    opacity: 0.3;
     pointer-events: none;
-    z-index: 0;
     user-select: none;
+}
+
+.card .km-value {
+    left: 50%;
+    top: 60%;
+    height: 80%;
+    z-index: 1;
     max-height: 80%;
     max-width: 80%;
 }
 
-/* Masquer l'illustration sur toutes les cartes sauf les premières à droite */
+.card .animal {
+    left: 70%;
+    top: 30%;
+    height: 80%;
+    z-index: 2;
+}
+
+.card-placeholder .km-bg {
+    left: 50%;
+    top: 50%;
+    width: 70%;
+    opacity: 0.3;
+    z-index: 0;
+    max-height: 80%;
+    max-width: 80%;
+}
+
+/* Masquer illustration sauf première carte */
 .card-placeholder:not(:nth-child(1)) img.km-bg {
     display: none;
 }
 
-/* Inverser l'ordre z-index des placeholders pour qu'ils soient stackés dans l'ordre inverse */
+/* Z-index pour ordre d'empilement des placeholders */
 .placeholders-container .card-placeholder:nth-child(1) { z-index: 10; }
 .placeholders-container .card-placeholder:nth-child(2) { z-index: 9; }
 .placeholders-container .card-placeholder:nth-child(3) { z-index: 8; }
@@ -463,184 +609,163 @@ body {
 .placeholders-container .card-placeholder:nth-child(9) { z-index: 2; }
 .placeholders-container .card-placeholder:nth-child(10) { z-index: 1; }
 
-/* Style pour les slots de cartes */
-.card-slot {
-    opacity: 0;
-    transition: opacity 0.3s ease;
+/* Z-index pour les cartes (dernière posée au-dessus) */
+.cards-container .card-slot:nth-child(1) { z-index: 11; }
+.cards-container .card-slot:nth-child(2) { z-index: 12; }
+.cards-container .card-slot:nth-child(3) { z-index: 13; }
+.cards-container .card-slot:nth-child(4) { z-index: 14; }
+.cards-container .card-slot:nth-child(5) { z-index: 15; }
+.cards-container .card-slot:nth-child(6) { z-index: 16; }
+.cards-container .card-slot:nth-child(7) { z-index: 17; }
+.cards-container .card-slot:nth-child(8) { z-index: 18; }
+.cards-container .card-slot:nth-child(9) { z-index: 19; }
+.cards-container .card-slot:nth-child(10) { z-index: 20; }
+
+/* Marges pour superposition (sélecteurs optimisés) */
+.card:not(:first-child),
+.card-placeholder:not(:first-child),
+.card-slot:not(:first-child) {
+    margin-right: calc(-1 * min(40px, 4vw));
 }
 
-.card-slot .card {
+/* ========================================
+   MODAL
+   ======================================== */
+.modal-backdrop {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-}
-
-/* Marges pour l'overlap des éléments */
-.card-track .card:not(:first-child),
-.card-track .card-placeholder:not(:first-child),
-.placeholders-container .card-placeholder:not(:first-child),
-.cards-container .card-slot:not(:first-child) {
-    margin-right: calc(-1 * min(40px, 4vw));
-}
-
-/* Alignement des placeholders identique aux cartes */
-.placeholders-container .card-placeholder:not(:first-child) {
-    margin-right: calc(-1 * min(40px, 4vw));
-    margin-left: 0;
-}
-
-.card img.km-value { 
-    position: absolute;
-    left: 50%;
-    top: 60%;
-    width: auto;
-    height: 80%;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-    z-index: 1;
-    user-select: none;
-    max-height: 80%;
-    max-width: 80%;
-}
-.card img.animal {
-
-    position: absolute;
-    left: 70%;
-    top: 30%;
-    z-index: 2;
-    transform: translate(-50%, -50%);
-    width: auto;
-    height: 80%;
-    pointer-events: none;
-    user-select: none;
-
-}
-
-.controls {
-    display: flex;
-    align-items: center;
-    background: none;
-    border-radius: 20px 0px 0px 20px;
-    background-color: var(--card-bg);
-    box-shadow: #00000050 0px 2px 8px;
-    padding: 5px 8px 5px 5px;  
-    flex-shrink: 0;
-}
-
-.controls-left {
-    display: flex;
-    align-items: center;
-    padding: 4px 4px 4px 12px;
-    flex-shrink: 0;
-}
-.controls .count {
-    color: var(--bg-dark-grey);
-    font-weight: bold;
-    font-size: 16px;
-    min-width: 33px;
-    text-align: center;
-}
-
-/* --- Header --- */
-.header {
-    padding: 12px 20px;
-    display: flex;
-    border-bottom: 1px solid #333;
-    background-color: none;
-    justify-content: space-between;
-    align-items: center;
-    flex-shrink: 0;
-}
-.icon-btn {
-    background: var(--primary-blue);
-    border: none;
-    border-radius: 8px;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
+    background-color: rgba(0,0,0,0.6);
     justify-content: center;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-.icon-btn:hover { background-color: var(--primary-blue-hover); }
-.icon-btn img {
-    width: 22px;
-    height: 22px;
-    filter: invert(1) brightness(2);
-}
-.icon-btn.btn-danger.secondary img {
-    filter: none !important;
-    color: var(--danger-red) !important;
-    fill: var(--danger-red) !important;
-}
-.icon-btn.btn-danger.secondary:hover img {
-    color: #fff !important;
-    fill: #fff !important;
-}
-.player-dropdown {
-    position: relative;
-}
-.player-dropdown-button {
-    background: none;
-    border: 1px solid var(--primary-blue);
-    border-radius: 8px;
-    padding: 8px 16px;
-    color: var(--primary-blue);
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    display: flex;
     align-items: center;
-    gap: 8px;
-    transition: background-color 0.2s;
-}
-.player-dropdown-button:hover {
-    background-color: var(--primary-blue-hover);
-}
-.player-dropdown-button img {
-    width: 23px;
-    height: 23px;
-    fill: var(--primary-blue) !important;
-}
-.player-dropdown-button:hover img {
-    fill: var(--primary-blue-hover) !important;
-}
-.player-dropdown-content {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background: var(--card-bg);
-    color: var(--text-dark);
-    min-width: 100%;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
-    border-radius: 12px;
-    padding: 8px 0;
-    z-index: 100;
-}
-.player-dropdown.open .player-dropdown-content {
-    display: block;
-}
-.player-dropdown-content a {
-    background: none;
-    color: var(--text-dark);
-    font-size: 15px;
-    font-weight: 500;
-    padding: 10px 24px;
-    text-align: left;
-    border-radius: 8px;
-    margin: 2px 0;
-    transition: background 0.2s, color 0.2s;
-    display: block;
-    cursor: pointer;
-    text-decoration: none;
-}
-.player-dropdown-content a:hover {
-    background: var(--primary-blue);
-    color: var(--text-light);
+    z-index: 1000;
 }
 
-/* --- Footer --- */
+.modal-content {
+    background-color: var(--card-bg);
+    color: var(--text-dark);
+    padding: 24px;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 350px;
+}
+
+.modal-content h3 {
+    font-size: 20px;
+    margin-bottom: 16px;
+}
+
+.modal-content p {
+    color: #6B7280;
+    margin-bottom: 24px;
+}
+
+.modal-content .player-name-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.modal-content .player-name-inputs input {
+    border: 1px solid #D1D5DB;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 16px;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.modal-btn {
+    border: 1px solid #D1D5DB;
+    background-color: var(--card-bg);
+    color: var(--text-dark);
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s;
+}
+
+.modal-btn.primary {
+    background-color: var(--primary-blue);
+    color: var(--text-light);
+    border-color: var(--primary-blue);
+}
+
+/* ========================================
+   BOUTONS DANGER/RESET - STYLES UNIFIÉS
+   ======================================== */
+.btn-danger,
+.btn-alert,
+.modal-btn.alert {
+    background: var(--danger-red);
+    color: var(--text-light);
+    border: 2px solid var(--danger-red-hover);
+    border-radius: 8px;
+    font-weight: bold;
+    transition: background 0.2s, color 0.2s;
+}
+
+.btn-danger:hover,
+.btn-alert:hover,
+.modal-btn.alert:hover {
+    background: var(--danger-red-hover);
+    color: #fff;
+}
+
+.modal-btn.secondary.alert {
+    background-color: transparent;
+    color: var(--danger-red);
+    border: 1px solid var(--danger-red);
+}
+
+.modal-btn.secondary.alert:hover {
+    background-color: var(--danger-red);
+    color: var(--text-light);
+    border-color: var(--danger-red-hover);
+}
+
+#reset-btn {
+    background: transparent;
+    color: var(--danger-red);
+    border: 1px solid var(--danger-red);
+    border-radius: 8px;
+    font-weight: bold;
+    transition: background 0.2s, color 0.2s;
+}
+
+#reset-btn:hover {
+    background: var(--danger-red);
+    color: #fff;
+    border-color: var(--danger-red-hover);
+}
+
+#reset-btn img,
+#reset-btn svg {
+    color: var(--danger-red);
+    fill: var(--danger-red);
+    width: 20px;
+    height: 20px;
+    transition: color 0.2s, fill 0.2s;
+}
+
+#reset-btn:hover img,
+#reset-btn:hover svg {
+    color: #fff;
+    fill: #fff;
+}
+
+/* ========================================
+   FOOTER & NAVIGATION
+   ======================================== */
 .player-nav {
     display: none;
     flex-shrink: 0;
@@ -648,6 +773,7 @@ body {
     justify-content: space-between;
     align-items: center;
 }
+
 .nav-arrow {
     background: var(--primary-blue);
     border: var(--primary-blue);
@@ -660,154 +786,28 @@ body {
     justify-content: center;
     cursor: pointer;
 }
-.nav-arrow:disabled { background-color: none; cursor: not-allowed; }
-.nav-arrow img { width: 20px; height: 20px; fill:#1D4ED8}
+
+.nav-arrow:disabled {
+    background-color: none;
+    cursor: not-allowed;
+}
+
+.nav-arrow img {
+    width: 20px;
+    height: 20px;
+    fill: #1D4ED8;
+}
+
 .current-player-info {
     color: var(--bg-board);
     font-size: 24px;
     font-weight: 600;
 }
 
-/* --- Modal --- */
-.modal-backdrop {
-    display: none;
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.6);
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-.modal-content {
-    background-color: var(--card-bg);
-    color: var(--text-dark);
-    padding: 24px;
-    border-radius: 16px;
-    width: 90%;
-    max-width: 350px;
-}
-.modal-content h3 { font-size: 20px; margin-bottom: 16px; }
-.modal-content p { color: #6B7280; margin-bottom: 24px; }
-.modal-content .player-name-inputs { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
-.modal-content .player-name-inputs input {
-    border: 1px solid #D1D5DB;
-    border-radius: 8px;
-    padding: 10px;
-    font-size: 16px;
-}
-.modal-buttons { display: flex; gap: 12px; justify-content: flex-end; }
-.modal-btn {
-    border: 1px solid #D1D5DB;
-    background-color: var(--card-bg);
-    color: var(--text-dark);
-    padding: 10px 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 500;
-}
-.modal-btn.primary {
-    background-color: var(--primary-blue);
-    color: var(--text-light);
-    border-color: var(--primary-blue);
-}
-#reset-names-btn.modal-btn.secondary.alert,
-.modal-btn.secondary.alert {
-    background-color: transparent !important;
-    color: var(--danger-red) !important;
-    border: 1px solid var(--danger-red) !important;
-    border-radius: 8px !important;
-}
-#reset-names-btn.modal-btn.secondary.alert:hover,
-.modal-btn.secondary.alert:hover {
-    background-color: var(--danger-red) !important;
-    color: var(--text-light) !important;
-    border-color: var(--danger-red-hover) !important;
-}
-
-/* --- Boutons Danger/Reset --- */
-.btn-danger {
-    background: var(--danger-red);
-    color: var(--text-light);
-    border: 2px solid var(--danger-red-hover);
-    border-radius: 8px;
-    font-weight: bold;
-    transition: background 0.2s, color 0.2s;
-}
-.btn-danger:hover {
-    background: var(--danger-red-hover);
-    color: #fff;
-}
-.btn-danger,
-.btn-alert,
-#confirm-reset-btn,
-.modal-btn.alert {
-    background: var(--danger-red) !important;
-    color: var(--text-light) !important;
-    border: 2px solid var(--danger-red-hover) !important;
-    border-radius: 8px !important;
-    font-weight: bold !important;
-    transition: background 0.2s, color 0.2s !important;
-}
-.btn-danger:hover,icon-btn btn-danger
-.btn-alert:hover,
-#confirm-reset-btn:hover,
-.modal-btn.alert:hover {
-    background: var(--danger-red-hover) !important;
-    color: #fff !important;
-}
-#confirm-reset-btn {
-    background: var(--danger-red) !important;
-    color: var(--text-light) !important;
-    border: 2px solid var(--danger-red-hover) !important;
-    border-radius: 8px !important;
-    font-weight: bold !important;
-    transition: background 0.2s, color 0.2s !important;
-}
-#confirm-reset-btn:hover {
-    background: var(--danger-red-hover) !important;
-    color: #fff !important;
-}
-#reset-btn {
-    background: transparent !important;
-    color: var(--danger-red) !important;
-    border: 1px solid var(--danger-red) !important;
-    border-radius: 8px !important;
-    font-weight: bold !important;
-    transition: background 0.2s, color 0.2s !important;
-}
-#reset-btn img {
-    filter: none !important;
-    color: var(--danger-red) !important;
-    width: 20px;
-    height: 20px;
-    fill: var(--danger-red) !important;
-}
-#reset-btn:hover {
-    background: var(--danger-red) !important;
-    color: #fff !important;
-    border-color: var(--danger-red-hover) !important;
-}
-#reset-btn:hover img {
-    color: #fff !important;
-    fill: #fff !important;
-    filter: none !important;
-}
-#reset-btn.secondary svg {
-    color: var(--danger-red);
-    fill: var(--danger-red);
-    transition: color 0.2s, fill 0.2s;
-}
-#reset-btn.secondary:hover svg {
-    color: #000;
-    fill: #000;
-}
-
-
-
-
-/* --- Divers --- */
+/* ========================================
+   RÈGLES SPÉCIALES
+   ======================================== */
+/* Masquer placeholders pour cartes 200km (première rangée) */
 .card-row:first-child .placeholders-container .card-placeholder:nth-child(n+3) {
     visibility: hidden;
 }
