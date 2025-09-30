@@ -208,7 +208,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     const placeholders = placeholdersContainer.querySelectorAll('.card-placeholder');
                     const maxCards = cardInfo.max || 10;
                     const visiblePlaceholders = cardInfo.max || 10;
+<<<<<<< HEAD
                     const maxPossible = cardInfo.max ? cardInfo.max - cardCount : Math.floor((1000 - player.score) / cardInfo.km);
+=======
+                    
+                    // Calcul plus robuste de maxPossible
+                    let maxPossible;
+                    if (cardInfo.max) {
+                        // Pour les cartes avec limite, le maximum possible est simplement la limite moins les cartes actuelles
+                        maxPossible = Math.max(0, cardInfo.max - cardCount);
+                    } else {
+                        // Pour les cartes sans limite, calculer selon l'espace restant
+                        const remainingKm = 1000 - player.score;
+                        maxPossible = Math.floor(remainingKm / cardInfo.km);
+                    }
+>>>>>>> c513928 (Card content optimisation)
                     
                     placeholders.forEach((placeholder, i) => {
                         // Pour les cartes 200km, seuls les 2 premiers placeholders sont visibles

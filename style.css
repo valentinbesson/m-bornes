@@ -344,14 +344,13 @@ body {
     opacity: 0.3;
     cursor: not-allowed;
 }
-.card-row-btn:hover { background-color: #fee2e200; }
 .card-row-btn.add {
     border-color: var(--primary-blue);
     background-color: #f3f4f600;
     color: var(--primary-blue);
 }
-.card-row-btn.add:hover {
-     background-color: var(--primary-blue-hover); }
+
+
 .card-row-btn.add:disabled {
     background-color: #dbeafe00;
     border-color: var(--primary-blue);
@@ -383,7 +382,11 @@ body {
     flex-direction: row-reverse;
     justify-content: flex-start;
     align-items: center;
+<<<<<<< HEAD
     padding: 20px 0;
+=======
+    padding: 6px 0;
+>>>>>>> c513928 (Card content optimisation)
 }
 
 .placeholders-container {
@@ -399,13 +402,16 @@ body {
 }
 .card,
 .card-placeholder,
+<<<<<<< HEAD
+=======
+
+>>>>>>> c513928 (Card content optimisation)
 .card-slot {
     flex: 1 1 0;
     min-width: 0;
     width: auto;
     height: 100%;
-    min-height: 60px;
-    max-height: 180px;
+    max-height: 300px;
     border-radius: 8px;
     transition: margin 0.3s ease, opacity 0.3s ease;
     position: relative;
@@ -437,8 +443,8 @@ body {
     position: absolute;
     left: 50%;
     top: 50%;
-    width: 48px;
-    height: 48px;
+    width: 70%;
+    height: auto;
     transform: translate(-50%, -50%);
     opacity: 0.3;
     pointer-events: none;
@@ -489,8 +495,39 @@ body {
     margin-right: calc(-1 * min(40px, 4vw));
     margin-left: 0;
 }
+<<<<<<< HEAD
 .card img.km-value { height: 30px; }
 .card img.animal { width: 40px; height: 40px; }
+=======
+
+.card img.km-value { 
+    position: absolute;
+    left: 50%;
+    top: 60%;
+    width: auto;
+    height: 80%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 2;
+    user-select: none;
+    max-height: 80%;
+    max-width: 80%;
+}
+.card img.animal {
+
+    position: absolute;
+    left: 70%;
+    top: 30%;
+    z-index: 1;
+    transform: translate(-50%, -50%);
+    width: auto;
+    height: 80%;
+    pointer-events: none;
+    user-select: none;
+
+}
+
+>>>>>>> c513928 (Card content optimisation)
 .controls {
     display: flex;
     align-items: center;
@@ -501,6 +538,7 @@ body {
     padding: 5px 8px 5px 5px;  
     flex-shrink: 0;
 }
+
 .controls-left {
     display: flex;
     align-items: center;
