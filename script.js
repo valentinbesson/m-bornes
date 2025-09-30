@@ -208,9 +208,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     const placeholders = placeholdersContainer.querySelectorAll('.card-placeholder');
                     const maxCards = cardInfo.max || 10;
                     const visiblePlaceholders = cardInfo.max || 10;
-<<<<<<< HEAD
-                    const maxPossible = cardInfo.max ? cardInfo.max - cardCount : Math.floor((1000 - player.score) / cardInfo.km);
-=======
                     
                     // Calcul plus robuste de maxPossible
                     let maxPossible;
@@ -222,7 +219,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         const remainingKm = 1000 - player.score;
                         maxPossible = Math.floor(remainingKm / cardInfo.km);
                     }
->>>>>>> c513928 (Card content optimisation)
                     
                     placeholders.forEach((placeholder, i) => {
                         // Pour les cartes 200km, seuls les 2 premiers placeholders sont visibles

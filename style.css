@@ -382,11 +382,7 @@ body {
     flex-direction: row-reverse;
     justify-content: flex-start;
     align-items: center;
-<<<<<<< HEAD
-    padding: 20px 0;
-=======
     padding: 6px 0;
->>>>>>> c513928 (Card content optimisation)
 }
 
 .placeholders-container {
@@ -402,10 +398,6 @@ body {
 }
 .card,
 .card-placeholder,
-<<<<<<< HEAD
-=======
-
->>>>>>> c513928 (Card content optimisation)
 .card-slot {
     flex: 1 1 0;
     min-width: 0;
@@ -495,10 +487,6 @@ body {
     margin-right: calc(-1 * min(40px, 4vw));
     margin-left: 0;
 }
-<<<<<<< HEAD
-.card img.km-value { height: 30px; }
-.card img.animal { width: 40px; height: 40px; }
-=======
 
 .card img.km-value { 
     position: absolute;
@@ -508,7 +496,7 @@ body {
     height: 80%;
     transform: translate(-50%, -50%);
     pointer-events: none;
-    z-index: 2;
+    z-index: 1;
     user-select: none;
     max-height: 80%;
     max-width: 80%;
@@ -518,7 +506,7 @@ body {
     position: absolute;
     left: 70%;
     top: 30%;
-    z-index: 1;
+    z-index: 2;
     transform: translate(-50%, -50%);
     width: auto;
     height: 80%;
@@ -527,7 +515,6 @@ body {
 
 }
 
->>>>>>> c513928 (Card content optimisation)
 .controls {
     display: flex;
     align-items: center;
