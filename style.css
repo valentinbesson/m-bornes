@@ -116,9 +116,9 @@ body {
     margin-right: 8px;
     width: 18px;
     height: 18px;
-    background: #343940;
+    background: #39404a;
     border-radius: 50%;
-    border: #343940 2px solid;
+    border: #39404a 2px solid;
 }
 .progress-circle.active {
     margin-right: 12px;
@@ -309,7 +309,7 @@ body {
     border-top: #333 solid 2px;
     background-color: var(--bg-board);
     box-shadow: inset 0 14px 8px -8px rgba(0, 0, 0, 0.2);
-    padding: 16px;
+    padding: 16px 0px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -328,9 +328,9 @@ body {
     background: #ffffff00;
     border: 2px solid var(--danger-red);
     color: var(--danger-red);
-    width: 45px;
-    height: 45px;
-    border-radius: 12px;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
     font-size: 24px;
     font-weight: bold;
     cursor: pointer;
@@ -347,8 +347,8 @@ body {
 .card-row-btn:hover { background-color: #fee2e200; }
 .card-row-btn.add {
     border-color: var(--primary-blue);
-    background-color: var(--primary-blue);
-    color: var(--text-light);
+    background-color: #f3f4f600;
+    color: var(--primary-blue);
 }
 .card-row-btn.add:hover {
      background-color: var(--primary-blue-hover); }
@@ -426,16 +426,23 @@ body {
     display: flex;
     align-items: center;
     background: none;
-    border-radius: 12px;
-    padding: 4px;
+    border-radius: 20px 0px 0px 20px;
+    background-color: var(--card-bg);
+    box-shadow: #00000050 0px 2px 8px;
+    padding: 5px 8px 5px 5px;  
+    flex-shrink: 0;
+}
+.controls-left {
+    display: flex;
+    align-items: center;
+    padding: 4px 4px 4px 12px;
     flex-shrink: 0;
 }
 .controls .count {
-    color: var(--text-dark);
+    color: var(--bg-dark-grey);
     font-weight: bold;
-    font-size: 25px;
-    padding-right: 10px;
-    min-width: 40px;
+    font-size: 16px;
+    min-width: 33px;
     text-align: center;
 }
 

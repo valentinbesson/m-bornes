@@ -51,10 +51,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div id="game-board-${playerIndex}" class="game-board">
                             ${CARD_DATA.map(card => `
                                 <div class="card-row">
-                                    <button class="card-row-btn" data-km="${card.km}" data-player="${playerIndex}" disabled>-</button>
+                                    <div class="controls-left">
+                                        <button class="card-row-btn" data-km="${card.km}" data-player="${playerIndex}" disabled>-</button>
+                                    </div>
                                     <div class="card-track">
                                         ${Array(10).fill().map((_, i) => `
-                                            <div class="card-placeholder">
+                                            <div class="card-placeholder" style="z-index: ${1 - (i * 0.1)};">
                                                 <img class="km-bg" src="assets/distance/distance-${card.km}.svg" alt="${card.km} km">
                                             </div>
                                         `).join('')}
@@ -200,8 +202,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else {
                         const maxPossible = cardInfo.max ? cardInfo.max - cardCount : Math.floor((1000 - player.score) / cardInfo.km);
                         const placeholderOpacity = (i - cardCount < maxPossible) ? '' : ' style="opacity:0;"';
+                        const zIndex = 1 - (i * 0.1); // Z-index décroissant mais inférieur aux cartes (z-index: 2)
+                        const styles = `z-index: ${zIndex};${placeholderOpacity ? placeholderOpacity.replace(' style="', '').replace('"', '') : ''}`;
                         cardTrack.innerHTML += `
-                            <div class="card-placeholder"${placeholderOpacity}>
+                            <div class="card-placeholder" style="${styles}">
                                 <img class="km-bg" src="assets/distance/distance-${cardInfo.km}.svg" alt="${cardInfo.km} km">
                             </div>
                         `;
