@@ -367,7 +367,7 @@ body {
     min-height: 0;
     padding: 20px 0 20px 0;
     height: 100%;
-    overflow: hidden; /* Empêche les cartes de déborder */
+    /* overflow: hidden; Empêche les cartes de déborder */
     position: relative;
 }
 

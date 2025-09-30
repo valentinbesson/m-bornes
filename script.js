@@ -207,13 +207,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Update placeholders visibility
                     const placeholders = placeholdersContainer.querySelectorAll('.card-placeholder');
                     const maxCards = cardInfo.max || 10;
-                    const visiblePlaceholders = cardInfo.max || 10;
+                    let visiblePlaceholders = cardInfo.max || 10;
                     
-                    // Calcul plus robuste de maxPossible
+                    // Calcul plus robuste de maxPossible et des placeholders visibles
                     let maxPossible;
                     if (cardInfo.max) {
-                        // Pour les cartes avec limite, le maximum possible est simplement la limite moins les cartes actuelles
-                        maxPossible = Math.max(0, cardInfo.max - cardCount);
+                        // Pour les cartes avec limite, calculer selon l'espace restant ET la limite
+                        const remainingKm = 1000 - player.score;
+                        const maxByLimit = cardInfo.max - cardCount;
+                        const maxBySpace = Math.floor(remainingKm / cardInfo.km);
+                        maxPossible = Math.max(0, Math.min(maxByLimit, maxBySpace));
+                        
+                        // Ajuster les placeholders visibles selon l'espace disponible
+                        const totalPossible = cardCount + maxPossible;
+                        visiblePlaceholders = Math.min(cardInfo.max, totalPossible);
                     } else {
                         // Pour les cartes sans limite, calculer selon l'espace restant
                         const remainingKm = 1000 - player.score;
@@ -221,12 +228,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     
                     placeholders.forEach((placeholder, i) => {
-                        // Pour les cartes 200km, seuls les 2 premiers placeholders sont visibles
+                        // Ajuster la visibilité des placeholders selon l'espace disponible
                         if (i >= visiblePlaceholders) {
                             placeholder.style.visibility = 'hidden';
                         } else {
                             placeholder.style.visibility = 'visible';
-                            if (i < maxPossible + cardCount) {
+                            // Si maxPossible est 0 (limite atteinte), masquer tous les placeholders restants
+                            if (maxPossible === 0 && i >= cardCount) {
+                                placeholder.style.opacity = '0';
+                            } else if (i < maxPossible + cardCount) {
                                 placeholder.style.opacity = '1';
                             } else {
                                 placeholder.style.opacity = '0';
