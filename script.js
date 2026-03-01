@@ -105,6 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
             gameState.currentPlayerIndex = count - 1;
         }
         
+        updateUI();
         updateTabBar();
         togglePlayerNavigation(count > 1);
         closeDropdown();
