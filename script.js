@@ -185,6 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
         gameState.players.forEach(player => {
             player.score = 0;
             player.isWinner = false;
+            player.confettiDone = false;
             CARD_DATA.forEach(card => player.cards[card.km] = 0);
         });
         
@@ -227,51 +228,81 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function updatePlayerContainer(playerIndex) {
         const player = gameState.players[playerIndex];
-        const progressBubble = document.getElementById(`progress-bubble-${playerIndex}`);
         const gameBoard = document.getElementById(`game-board-${playerIndex}`);
         
-        if (!player || !progressBubble || !gameBoard) return;
+        if (!player || !gameBoard) return;
         
-        updateProgressBar(player, progressBubble);
+        updateAllProgressBars(playerIndex);
         updateCardRows(player, gameBoard);
     }
 
     /**
-     * Met à jour la barre de progression d'un joueur
-     * @param {Object} player - Données du joueur
-     * @param {HTMLElement} progressBubble - Élément de la bulle de progression
+     * Reconstruit toute la progress-section d'un joueur :
+     * affiche toutes les barres dans l'ordre (1..playerCount),
+     * la barre du joueur propriétaire est la barre "active" (grande + voiture),
+     * les autres sont des mini barres.
+     * @param {number} playerIndex - Index du joueur propriétaire
      */
-    function updateProgressBar(player, progressBubble) {
-        const progressPercent = Math.min(player.score / CONFIG.WIN_SCORE, 1) * 100;
-        
-        // Position de la bulle
-        progressBubble.style.left = `calc(${progressPercent}% - ${progressPercent / 100 * 40}px)`;
-        progressBubble.textContent = player.score;
-        progressBubble.style.borderColor = player.isWinner ? '#4CAF50' : 'white';
-        
-        // Animation de victoire
-        if (player.isWinner) {
-            progressBubble.classList.add('arrival');
-            triggerVictoryAnimation(progressBubble);
-        } else {
-            progressBubble.classList.remove('arrival');
-            progressBubble._confettiDone = false;
+    function updateAllProgressBars(playerIndex) {
+        const section = document.getElementById(`progress-section-${playerIndex}`);
+        if (!section) return;
+
+        let html = '';
+
+        for (let i = 0; i < gameState.playerCount; i++) {
+            const p = gameState.players[i];
+            const pct = Math.min(p.score / CONFIG.WIN_SCORE, 1) * 100;
+            // Compensation latérale : la bulle déborde à gauche au départ et à droite à l'arrivée
+            const offset = pct / 100 * 40; // 40px = largeur max de débordement (identique à la barre principale)
+
+            if (i === playerIndex) {
+                // Barre active : grande, avec voiture et drapeau
+                html += `
+                    <div class="progress-track">
+                        <div id="progress-bubble-${playerIndex}" class="progress-bubble ${p.isWinner ? 'arrival' : ''}"
+                             style="left: calc(${pct}% - ${offset}px)">
+                            ${p.score}
+                        </div>
+                        <img src="assets/images/arrival.svg" class="progress-arrival-flag" alt="Arrivée">
+                    </div>
+                `;
+            } else {
+                // Mini barre pour les autres joueurs
+                const miniOffset = pct / 100 * 40;
+                html += `
+                    <div class="mini-progress-track">
+                        <div class="mini-progress-marker ${p.isWinner ? 'arrival' : ''}"
+                             style="left: calc(${pct}% - ${miniOffset}px)">
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        section.innerHTML = html;
+
+        // Déclencher les confettis uniquement si ce joueur vient d'arriver
+        // et qu'on est bien sur sa vue (playerIndex === currentPlayerIndex)
+        const activePlayer = gameState.players[playerIndex];
+        if (activePlayer.isWinner && playerIndex === gameState.currentPlayerIndex) {
+            triggerVictoryAnimation(activePlayer);
         }
     }
 
     /**
-     * Déclenche l'animation de victoire (confettis)
-     * @param {HTMLElement} progressBubble - Élément de la bulle
+     * Déclenche l'animation de victoire (confettis) une seule fois par joueur
+     * Le flag confettiDone est stocké dans le state du joueur (pas sur le DOM)
+     * @param {Object} player - Données du joueur
      */
-    function triggerVictoryAnimation(progressBubble) {
-        if (!progressBubble._confettiDone && window.confetti) {
+    function triggerVictoryAnimation(player) {
+        if (!player.confettiDone && window.confetti) {
             window.confetti({
                 particleCount: 120,
                 spread: 90,
                 origin: { y: 0.5 },
                 zIndex: 9999
             });
-            progressBubble._confettiDone = true;
+            player.confettiDone = true;
         }
     }
 
@@ -437,54 +468,24 @@ document.addEventListener('DOMContentLoaded', () => {
      * @returns {HTMLElement} Élément li de la navigation
      */
     function createTabBarItem(player, isActive) {
-        const percent = Math.min(player.score / CONFIG.WIN_SCORE, 1);
-        
-        const { svg, circleClass, labelClass } = getTabBarStyles(percent, isActive);
-        
+        const percent = Math.min(player.score / CONFIG.WIN_SCORE, 1) * 100;
+
+        // Remplissage proportionnel : jaune actif, bleu inactif, à 30% d'opacité
+        let bgGradient;
+        if (percent > 0) {
+            const fillColor = isActive ? 'rgba(225, 237, 118, 0.30)' : 'rgba(51, 153, 255, 0.30)';
+            bgGradient = `linear-gradient(to right, ${fillColor} ${percent}%, transparent ${percent}%)`;
+        } else {
+            bgGradient = 'none';
+        }
+
         const li = document.createElement('li');
         li.className = 'tab-bar-item' + (isActive ? ' active' : '');
-        li.innerHTML = `
-            <div class="${circleClass}">
-                ${svg}
-            </div>
-            <span class="${labelClass}">${player.name}</span>
-        `;
-        
+        li.style.background = bgGradient;
+        // Opacité réduite pour les joueurs arrivés (victoire déjà acquise)
+        if (player.isWinner) li.style.opacity = '0.5';
+        li.innerHTML = `<span class="tab-bar-label${isActive ? ' active' : ''}">${player.name}</span>`;
         return li;
-    }
-
-    /**
-     * Génère les styles pour un élément de la barre de navigation
-     * @param {number} percent - Pourcentage de progression (0-1)
-     * @param {boolean} isActive - Est-ce l'élément actif
-     * @returns {Object} Styles SVG et classes CSS
-     */
-    function getTabBarStyles(percent, isActive) {
-        if (isActive) {
-            const dasharray = 44;
-            const dashoffset = 44 - Math.round(44 * percent);
-            return {
-                svg: `<svg width="18" height="18" viewBox="0 0 16 16">
-                    <circle cx="8" cy="8" r="7" stroke="#000" stroke-width="3" fill="none" />
-                    <circle class="progress" cx="8" cy="8" r="7" stroke="#07a240" stroke-width="1.5" 
-                            fill="none" stroke-dasharray="44" stroke-dashoffset="${dashoffset}" />
-                </svg>`,
-                circleClass: 'progress-circle active',
-                labelClass: 'tab-bar-label active'
-            };
-        } else {
-            const dasharray = 25;
-            const dashoffset = 25 - Math.round(25 * percent);
-            return {
-                svg: `<svg width="18" height="18" viewBox="0 0 10 10">
-                    <circle cx="5" cy="5" r="4" stroke="#000" stroke-width="2" fill="none" />
-                    <circle class="progress" cx="5" cy="5" r="4" stroke="#72C4FE" stroke-width="1" 
-                            fill="none" stroke-dasharray="25" stroke-dashoffset="${dashoffset}" />
-                </svg>`,
-                circleClass: 'progress-circle',
-                labelClass: 'tab-bar-label'
-            };
-        }
     }
 
     /* ========================================
@@ -1195,11 +1196,8 @@ document.addEventListener('DOMContentLoaded', () => {
         containerDiv.id = `game-container-${playerIndex}`;
         
         containerDiv.innerHTML = `
-            <section class="progress-section">
-                <div class="progress-track">
-                    <div id="progress-bubble-${playerIndex}" class="progress-bubble">0</div>
-                    <img src="assets/images/arrival.svg" class="progress-arrival-flag" alt="Arrivée">
-                </div>
+            <section class="progress-section" id="progress-section-${playerIndex}">
+                <!-- Les barres de tous les joueurs sont générées dynamiquement -->
             </section>
             <main class="game-board-slider">
                 <div id="game-board-${playerIndex}" class="game-board">

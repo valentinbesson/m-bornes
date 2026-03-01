@@ -160,7 +160,7 @@ body {
     align-items: center;
     font-weight: bold;
     cursor: pointer;
-    transition: color 0.2s;
+    transition: color 0.2s, background 0.5s ease;
     position: relative;
     border: var(--light-blue) 1px solid;
     border-radius: 8px;
@@ -187,51 +187,26 @@ body {
     text-overflow: ellipsis;
     max-width: 120px;
     display: inline-block;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .tab-bar-label.active {
     color: #F7FA8A;
     font-weight: bold;
     font-size: 20px;
-}
-
-.progress-circle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 8px;
-    width: 18px;
-    height: 18px;
-    background: #39404a;
-    border-radius: 50%;
-    border: #39404a 2px solid;
-}
-
-.progress-circle.active {
-    margin-right: 12px;
-}
-
-.progress {
-    width: 20px;
-    height: 20px;
-    transition: stroke-dashoffset 0.4s cubic-bezier(.4,0,.2,1), stroke 0.2s;
-}
-
-.tab-bar-item.active .progress {
-    stroke: var(--bg-board);
-}
-
-.tab-bar-item:not(.active) .progress {
-    stroke: var(--light-blue-plus);
+    text-shadow: 0px 0px 8px rgba(0, 0, 0, 0.5);
 }
 
 /* ========================================
    PROGRESS BAR
    ======================================== */
 .progress-section {
-    padding: 16px;
+    padding: 10px 16px 10px 16px;
     margin: 3px 10px 3px 50px;
     flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .progress-track {
@@ -307,6 +282,42 @@ body {
     background-color: white;
     z-index: 3;
 }
+
+/* ========================================
+   MINI BARRES DES AUTRES JOUEURS
+   ======================================== */
+
+/* Piste mini : ligne blanche 2px, outline gris 2px */
+.mini-progress-track {
+    background-color: #ffffff;
+    height: 6px;
+    border: 2px solid #D4D4D4;
+    border-radius: 4px;
+    position: relative;
+    overflow: visible;
+    /* pas de pointillés */
+}
+
+/* Marqueur des autres joueurs : bloc 6px de hauteur, même largeur que .progress-bubble (90px) */
+.mini-progress-marker {
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 90px;
+    height: 10px;
+    background-color: #7EA5BF;
+    border: 2px solid var(--text-light);
+    border-radius: 5px;
+    box-shadow: 4px 6px 10px rgba(0, 0, 0, 0.4);
+    transition: left 0.5s ease;
+    z-index: 4;
+}
+
+.mini-progress-marker.arrival {
+    border-color: #E1ED76;
+    box-shadow: 0 0 2px 2px rgba(225,237,118,0.3);
+}
+
 
 /* ========================================
    GAME CONTAINERS
