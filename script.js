@@ -173,6 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Retirer le statut de gagnant si le score descend sous 1000
         if (player.score < CONFIG.WIN_SCORE) {
             player.isWinner = false;
+            player.confettiDone = false; // Permettre de redéclencher les confettis si le joueur revient à 1000
         }
         
         updateUI();
@@ -252,15 +253,16 @@ document.addEventListener('DOMContentLoaded', () => {
         for (let i = 0; i < gameState.playerCount; i++) {
             const p = gameState.players[i];
             const pct = Math.min(p.score / CONFIG.WIN_SCORE, 1) * 100;
-            // Compensation latérale : la bulle déborde à gauche au départ et à droite à l'arrivée
-            const offset = pct / 100 * 40; // 40px = largeur max de débordement (identique à la barre principale)
+            // La bulle démarre 40px à gauche du bord gauche de la piste (score 0)
+            // et avance jusqu'au bord droit (score 1000)
 
             if (i === playerIndex) {
                 // Barre active : grande, avec voiture et drapeau
+                // left: de 40px (score=0) à calc(100% - 40px) (score=1000)
                 html += `
                     <div class="progress-track">
                         <div id="progress-bubble-${playerIndex}" class="progress-bubble ${p.isWinner ? 'arrival' : ''}"
-                             style="left: calc(${pct}% - ${offset}px)">
+                             style="left: calc(40px + (100% - 80px) * ${pct} / 100)">
                             ${p.score}
                         </div>
                         <img src="assets/images/arrival.svg" class="progress-arrival-flag" alt="Arrivée">
@@ -268,11 +270,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
             } else {
                 // Mini barre pour les autres joueurs
-                const miniOffset = pct / 100 * 40;
                 html += `
                     <div class="mini-progress-track">
                         <div class="mini-progress-marker ${p.isWinner ? 'arrival' : ''}"
-                             style="left: calc(${pct}% - ${miniOffset}px)">
+                             style="left: calc(40px + (100% - 80px) * ${pct} / 100)">
                         </div>
                     </div>
                 `;
