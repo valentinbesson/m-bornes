@@ -561,6 +561,7 @@ body {
 .card-slot {
     opacity: 0;
     transition: opacity 0.2s ease;
+    container-type: size;
 }
 
 .card-slot .card {
@@ -588,10 +589,13 @@ body {
 }
 
 .card .animal {
-    left: 70%;
-    top: 30%;
-    height: 80%;
-    z-index: 2;
+    top: -7px;
+    right: -3px;
+    left: auto;
+    transform: none;
+    width: min(85cqw, 85cqh);
+    height: auto;
+    z-index: 0;
 }
 
 .card-placeholder .km-bg {
