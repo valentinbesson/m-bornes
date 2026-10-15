@@ -541,7 +541,7 @@ body {
 }
 
 .card {
-    background-color: var(--card-bg2);
+    background: linear-gradient(20deg, #E1ED76 40%, #EBF4FD 43%, #EBF4FD 70%, #E1ED76 73%);
     border: 4px solid var(--card-bg);
     box-shadow: 3px 2px 4px rgba(0,0,0,0.2);
     display: flex;
@@ -580,21 +580,23 @@ body {
 }
 
 .card .km-value {
-    left: 50%;
+    left: 45%;
     top: 60%;
     height: 80%;
     z-index: 1;
     max-height: 80%;
     max-width: 80%;
+    filter: drop-shadow(-2px -2px 0.2px white) drop-shadow(2px -2px 0.2px white) drop-shadow(-2px 2px 0.2px white) drop-shadow(2px 2px 0.2px white);
 }
 
 .card .animal {
-    top: -7px;
-    right: -3px;
+    right: -10%;
+    top: -10%;
     left: auto;
     transform: none;
-    width: min(85cqw, 85cqh);
-    height: auto;
+    width: 85%;
+    height: 85%;
+    object-fit: contain;
     z-index: 0;
 }
 
