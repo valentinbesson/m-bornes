@@ -422,17 +422,62 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function updateCardSlots(container, cardInfo, cardCount) {
         const cardSlots = container.querySelectorAll('.card-slot');
-        
+
         cardSlots.forEach((slot, i) => {
             if (i < cardCount) {
                 // Afficher la carte dans ce slot
                 slot.innerHTML = `
-                    <div class="card">
+                    <div class="card" data-km="${cardInfo.km}" data-is-last="${i === cardCount - 1}">
                         <img src="assets/images/km-${cardInfo.km}.svg" class="km-value" alt="${cardInfo.km}">
                         <img src="assets/images/${cardInfo.animal}" class="animal" alt="${cardInfo.animal}">
                     </div>
                 `;
                 slot.style.opacity = '1';
+
+                // Ajouter les listeners de swipe vertical à la carte
+                const cardElement = slot.querySelector('.card');
+                if (cardElement) {
+                    const km = cardInfo.km;
+                    const isLastCard = i === cardCount - 1;
+                    let cardSwipeState = {
+                        startX: 0,
+                        startY: 0,
+                        startTime: 0,
+                        isInProgress: false
+                    };
+
+                    cardElement.addEventListener('touchstart', (e) => {
+                        if (gameState.isAnimating || e.touches.length > 1) return;
+                        const touch = e.touches[0];
+                        cardSwipeState.startX = touch.clientX;
+                        cardSwipeState.startY = touch.clientY;
+                        cardSwipeState.startTime = Date.now();
+                        cardSwipeState.isInProgress = true;
+                    }, { passive: true });
+
+                    cardElement.addEventListener('touchend', (e) => {
+                        if (!cardSwipeState.isInProgress || gameState.isAnimating) {
+                            cardSwipeState.isInProgress = false;
+                            return;
+                        }
+
+                        const touch = e.changedTouches[0];
+                        const endX = touch.clientX;
+                        const endY = touch.clientY;
+
+                        detectCardVerticalSwipe(
+                            cardSwipeState.startX,
+                            cardSwipeState.startY,
+                            endX,
+                            endY,
+                            cardSwipeState.startTime,
+                            km,
+                            isLastCard
+                        );
+
+                        cardSwipeState.isInProgress = false;
+                    }, { passive: true });
+                }
             } else {
                 // Slot vide
                 slot.innerHTML = '';
@@ -748,6 +793,35 @@ document.addEventListener('DOMContentLoaded', () => {
         swipeState.startTime = 0;
         swipeState.isInProgress = false;
         swipeState.startTarget = null;
+    }
+
+    /**
+     * Détecte et gère un swipe vertical sur une carte
+     * @param {number} startX - Position X de départ
+     * @param {number} startY - Position Y de départ
+     * @param {number} endX - Position X de fin
+     * @param {number} endY - Position Y de fin
+     * @param {number} startTime - Temps de départ du swipe
+     * @param {number} km - Valeur de la carte
+     * @param {boolean} isLastCard - True si c'est la dernière carte de la rangée
+     */
+    function detectCardVerticalSwipe(startX, startY, endX, endY, startTime, km, isLastCard) {
+        if (!isLastCard) return;
+
+        const deltaX = endX - startX;
+        const deltaY = endY - startY;
+        const swipeTime = Date.now() - startTime;
+        const absX = Math.abs(deltaX);
+        const absY = Math.abs(deltaY);
+
+        // Validation du swipe vertical
+        const isVertical = absY > absX * 1.2;
+        const isValidDistance = absY >= 40;
+        const isValidTime = swipeTime <= CONFIG.SWIPE_MAX_TIME;
+
+        if (isVertical && isValidDistance && isValidTime) {
+            removeCard(km);
+        }
     }
 
     /* ========================================
