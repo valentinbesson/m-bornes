@@ -433,6 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `;
                 slot.style.opacity = '1';
+                slot.style.pointerEvents = 'auto';
 
                 // Ajouter les listeners de swipe vertical à la carte
                 const cardElement = slot.querySelector('.card');
@@ -482,6 +483,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Slot vide
                 slot.innerHTML = '';
                 slot.style.opacity = '0';
+                slot.style.pointerEvents = 'none';
             }
         });
     }
@@ -907,10 +909,17 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleCardClick(e) {
         const card = e.target.closest('.card');
         const placeholder = e.target.closest('.card-placeholder');
-        const cardsContainer = e.target.closest('.cards-container');
         const cardSlot = e.target.closest('.card-slot');
 
-        if (!card && !placeholder && !cardsContainer && !cardSlot) return false;
+        // Rejeter si le clic ne vient pas d'un élément autorisé
+        if (!card && !placeholder && !cardSlot) return false;
+
+        // Si c'est un placeholder, vérifier qu'il est visible
+        if (placeholder && placeholder.style.opacity === '0') return false;
+        if (placeholder && placeholder.style.visibility === 'hidden') return false;
+
+        // Si c'est un card-slot, vérifier qu'il est visible
+        if (cardSlot && cardSlot.style.opacity === '0') return false;
 
         const cardRow = e.target.closest('.card-row');
         if (!cardRow) return false;

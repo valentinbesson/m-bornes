@@ -520,6 +520,7 @@ body {
 
 .cards-container {
     z-index: 2;
+    pointer-events: none;
 }
 
 /* Éléments de carte communs */
@@ -586,7 +587,7 @@ body {
     z-index: 1;
     max-height: 80%;
     max-width: 80%;
-    filter: drop-shadow(-2px -2px 0.2px white) drop-shadow(2px -2px 0.2px white) drop-shadow(-2px 2px 0.2px white) drop-shadow(2px 2px 0.2px white);
+    filter: drop-shadow(-1.5px -1.5px 0.2px white) drop-shadow(1.5px -1.5px 0.2px white) drop-shadow(-1.5px 1.5px 0.2px white) drop-shadow(1.5px 1.5px 0.2px white);
 }
 
 .card .animal {
