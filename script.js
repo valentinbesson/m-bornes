@@ -427,7 +427,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (i < cardCount) {
                 // Afficher la carte dans ce slot
                 slot.innerHTML = `
-                    <div class="card" data-km="${cardInfo.km}" data-is-last="${i === cardCount - 1}">
+                    <div class="card" data-km="${cardInfo.km}">
                         <img src="assets/images/km-${cardInfo.km}.svg" class="km-value" alt="${cardInfo.km}">
                         <img src="assets/images/${cardInfo.animal}" class="animal" alt="${cardInfo.animal}">
                     </div>
@@ -439,7 +439,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const cardElement = slot.querySelector('.card');
                 if (cardElement) {
                     const km = cardInfo.km;
-                    const isLastCard = i === cardCount - 1;
                     let cardSwipeState = {
                         startX: 0,
                         startY: 0,
@@ -472,12 +471,30 @@ document.addEventListener('DOMContentLoaded', () => {
                             endX,
                             endY,
                             cardSwipeState.startTime,
-                            km,
-                            isLastCard
+                            km
                         );
 
                         cardSwipeState.isInProgress = false;
                     }, { passive: true });
+
+                    cardElement.addEventListener('mousedown', (e) => {
+                        if (gameState.isAnimating || e.button !== 0) return;
+                        const startX = e.clientX;
+                        const startY = e.clientY;
+                        const startTime = Date.now();
+
+                        window.addEventListener('mouseup', (upEvent) => {
+                            if (gameState.isAnimating) return;
+                            if (detectCardVerticalSwipe(startX, startY, upEvent.clientX, upEvent.clientY, startTime, km)) {
+                                // Empêcher le clic qui suit le relâchement d'ajouter une carte
+                                const suppressClick = (clickEvent) => clickEvent.stopPropagation();
+                                window.addEventListener('click', suppressClick, true);
+                                setTimeout(() => {
+                                    window.removeEventListener('click', suppressClick, true);
+                                }, 0);
+                            }
+                        }, { once: true });
+                    });
                 }
             } else {
                 // Slot vide
@@ -805,11 +822,8 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {number} endY - Position Y de fin
      * @param {number} startTime - Temps de départ du swipe
      * @param {number} km - Valeur de la carte
-     * @param {boolean} isLastCard - True si c'est la dernière carte de la rangée
      */
-    function detectCardVerticalSwipe(startX, startY, endX, endY, startTime, km, isLastCard) {
-        if (!isLastCard) return;
-
+    function detectCardVerticalSwipe(startX, startY, endX, endY, startTime, km) {
         const deltaX = endX - startX;
         const deltaY = endY - startY;
         const swipeTime = Date.now() - startTime;
@@ -823,7 +837,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (isVertical && isValidDistance && isValidTime) {
             removeCard(km);
+            return true;
         }
+        return false;
     }
 
     /* ========================================
