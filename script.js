@@ -455,6 +455,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         cardSwipeState.isInProgress = true;
                     }, { passive: true });
 
+                    cardElement.addEventListener('touchmove', (e) => {
+                        if (!cardSwipeState.isInProgress) return;
+                        const touch = e.touches[0];
+                        const dx = Math.abs(touch.clientX - cardSwipeState.startX);
+                        const dy = Math.abs(touch.clientY - cardSwipeState.startY);
+                        if (dy > dx && dy > 10) {
+                            e.preventDefault();
+                        }
+                    }, { passive: false });
+
                     cardElement.addEventListener('touchend', (e) => {
                         if (!cardSwipeState.isInProgress || gameState.isAnimating) {
                             cardSwipeState.isInProgress = false;
