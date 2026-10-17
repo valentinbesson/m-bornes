@@ -688,9 +688,9 @@ body {
 }
 
 .count-btn.add {
-    background: var(--light-blue);
-    color: var(--text-light);
-    border: 1px solid var(--light-blue);
+    background: transparent;
+    color: var(--primary-blue);
+    border: 1px solid var(--primary-blue);
 }
 
 .count-btn:disabled,
