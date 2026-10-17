@@ -99,44 +99,6 @@ body {
     fill: var(--primary-blue-hover);
 }
 
-.player-dropdown-content {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background: var(--card-bg);
-    color: var(--text-dark);
-    min-width: 100%;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
-    border-radius: 12px;
-    padding: 8px 0;
-    z-index: 100;
-}
-
-.player-dropdown.open .player-dropdown-content {
-    display: block;
-}
-
-.player-dropdown-content a {
-    background: none;
-    color: var(--text-dark);
-    font-size: 15px;
-    font-weight: 500;
-    padding: 10px 24px;
-    text-align: left;
-    border-radius: 8px;
-    margin: 2px 0;
-    transition: background 0.2s, color 0.2s;
-    display: block;
-    cursor: pointer;
-    text-decoration: none;
-}
-
-.player-dropdown-content a:hover {
-    background: var(--primary-blue);
-    color: var(--text-light);
-}
-
 /* ========================================
    TAB BAR (NAVIGATION JOUEURS)
    ======================================== */
@@ -692,14 +654,113 @@ body {
     margin-bottom: 24px;
 }
 
+.player-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.modal-content h3.player-modal-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+}
+
+.count-btn {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border-radius: 4px;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.count-btn.remove {
+    background: transparent;
+    color: var(--danger-red);
+    border: 1px solid var(--danger-red);
+}
+
+.count-btn.add {
+    background: var(--light-blue);
+    color: var(--text-light);
+    border: 1px solid var(--light-blue);
+}
+
+.count-btn:disabled,
+.count-btn:disabled:hover {
+    background: #EEEEEE;
+    color: #BBBBBB;
+    border-color: #EEEEEE;
+    cursor: default;
+}
+
 .modal-content .player-name-inputs {
+    list-style: none;
+    padding: 0;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    margin-bottom: 24px;
+    margin: 0;
+    padding: 16px 0;
+    border-bottom: 1px solid #E5E7EB;
+    margin-bottom: 16px;
+    /* Hauteur fixe pour 4 joueurs : les boutons +/- ne bougent pas */
+    min-height: calc(4 * 42px + 3 * 12px + 32px);
+    box-sizing: border-box;
+}
+
+.player-name-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--card-bg);
+}
+
+.player-name-row.dragging {
+    position: relative;
+    z-index: 1;
+    opacity: 0.9;
+}
+
+.player-name-row.dragging input {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.drag-handle {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    width: 20px;
+    height: 40px;
+    flex-shrink: 0;
+    cursor: grab;
+    touch-action: none;
+}
+
+.drag-handle span {
+    display: block;
+    height: 3px;
+    border-radius: 2px;
+    background: #BBBBBB;
+}
+
+.player-name-row.dragging .drag-handle {
+    cursor: grabbing;
 }
 
 .modal-content .player-name-inputs input {
+    flex: 1;
+    min-width: 0;
+    height: 42px;
+    box-sizing: border-box;
     border: 1px solid #D1D5DB;
     border-radius: 8px;
     padding: 10px;
@@ -710,6 +771,10 @@ body {
     display: flex;
     gap: 12px;
     justify-content: flex-end;
+}
+
+.modal-buttons.spread {
+    justify-content: space-between;
 }
 
 .modal-btn {

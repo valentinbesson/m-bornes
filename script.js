@@ -93,29 +93,42 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     function setPlayerCount(count) {
         gameState.playerCount = count;
-        
+
         // Mise à jour de l'affichage
         const playerCountText = document.getElementById('player-count-text');
         if (playerCountText) {
-            playerCountText.textContent = `${count} joueur${count > 1 ? 's' : ''}`;
+            playerCountText.textContent = formatPlayerCount(count);
         }
-        
+
         // Ajuster l'index du joueur actuel si nécessaire
         if (gameState.currentPlayerIndex >= count) {
             gameState.currentPlayerIndex = count - 1;
         }
-        
+
         updateUI();
         updateTabBar();
         togglePlayerNavigation(count > 1);
-        closeDropdown();
-        
-        // Afficher modal des noms pour multi-joueurs
-        if (count > 1) {
-            setTimeout(() => showPlayerNameModal(), 100);
-        }
-        
         saveSettings();
+    }
+
+    /**
+     * Formate le nombre de joueurs ("1 joueur", "2 joueurs"...)
+     * @param {number} count - Nombre de joueurs
+     * @param {boolean} capitalize - Majuscule à "Joueur"
+     * @returns {string} Texte formaté
+     */
+    function formatPlayerCount(count, capitalize = false) {
+        const word = capitalize ? 'Joueur' : 'joueur';
+        return `${count} ${word}${count > 1 ? 's' : ''}`;
+    }
+
+    /**
+     * Indique si un nom est un nom par défaut ("Joueur N")
+     * @param {string} name - Nom du joueur
+     * @returns {boolean} True si nom par défaut
+     */
+    function isDefaultPlayerName(name) {
+        return !name || /^Joueur \d+$/.test(name);
     }
 
     /**
@@ -1014,42 +1027,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * Ajoute les écouteurs pour le dropdown des joueurs
+     * Ajoute l'écouteur du bouton "nombre de joueurs" (ouvre la modale des joueurs)
      */
     function addPlayerDropdownListeners() {
-        const dropdownContent = document.getElementById('player-dropdown-content');
-        if (dropdownContent) {
-            dropdownContent.addEventListener('click', (e) => {
-                e.preventDefault();
-                if (e.target.tagName === 'A') {
-                    const count = parseInt(e.target.dataset.players);
-                    setPlayerCount(count);
-                }
-            });
-        }
-        
         const dropdownButton = document.getElementById('player-dropdown-button');
-        const dropdown = document.getElementById('player-dropdown');
-        if (dropdownButton && dropdown) {
-            dropdownButton.addEventListener('click', (e) => {
-                e.stopPropagation();
-                dropdown.classList.toggle('open');
-            });
-            
-            document.addEventListener('click', (e) => {
-                if (!dropdown.contains(e.target)) {
-                    dropdown.classList.remove('open');
-                }
-            });
+        if (dropdownButton) {
+            dropdownButton.addEventListener('click', showPlayerNameModal);
         }
-    }
-
-    /**
-     * Ferme le dropdown des joueurs
-     */
-    function closeDropdown() {
-        const dropdown = document.getElementById('player-dropdown');
-        if (dropdown) dropdown.classList.remove('open');
     }
 
     /**
@@ -1084,7 +1068,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.key === 'Escape') {
                 closeModal();
             }
-            
+
+            // Pas de navigation entre joueurs quand le modal est ouvert
+            if (isModalOpen()) return;
+
             // Navigation avec les flèches
             if (e.key === 'ArrowLeft') {
                 e.preventDefault();
@@ -1128,132 +1115,226 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * Affiche le modal des noms de joueurs
+     * Brouillon du modal des joueurs : appliqué seulement au clic sur OK
+     * entries : les 4 joueurs dans l'ordre affiché, avec leur nom saisi ('' = nom par défaut)
+     */
+    let playerDraft = null;
+
+    /**
+     * Affiche le modal des joueurs (nombre, noms, ordre)
      */
     function showPlayerNameModal() {
         const modalContent = document.getElementById('modal-content');
         if (!modalContent) return;
-        
+
+        playerDraft = {
+            count: gameState.playerCount,
+            entries: gameState.players.map(player => ({
+                player,
+                name: isDefaultPlayerName(player.name) ? '' : player.name
+            }))
+        };
+
         modalContent.innerHTML = generatePlayerNameModalHTML();
-        
+
         // Ajouter les écouteurs
+        modalContent.querySelector('#add-player-btn').addEventListener('click', addDraftPlayer);
         modalContent.querySelector('#save-names-btn').addEventListener('click', savePlayerNames);
         modalContent.querySelector('#reset-names-btn').addEventListener('click', resetPlayerNames);
-        
-        // Configurer les inputs
-        setupPlayerNameInputs(modalContent);
-        
-        // Focus sur le premier input
-        const firstInput = modalContent.querySelector('#player-name-0');
-        if (firstInput) firstInput.focus();
-        
+
+        renderPlayerRows();
         showModal();
     }
 
     /**
-     * Génère le HTML pour le modal des noms
+     * Génère le HTML pour le modal des joueurs
      * @returns {string} HTML du modal
      */
     function generatePlayerNameModalHTML() {
-        const playerInputs = Array.from({ length: gameState.playerCount }, (_, i) => 
-            `<input type="text" id="player-name-${i}" placeholder="Joueur ${i + 1}" value="${gameState.players[i].name}">`
-        ).join('');
+        const icon = document.querySelector('#player-dropdown-button svg');
 
         return `
-            <h3 style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-                <span>Noms des joueurs</span>
-                <button id="reset-names-btn" class="modal-btn secondary alert" title="Réinitialiser les noms">Reset</button>
-            </h3>
-            <div class="player-name-inputs">
-                ${playerInputs}
+            <div class="player-modal-header">
+                <h3 class="player-modal-title">
+                    ${icon ? icon.outerHTML : ''}
+                    <span id="player-modal-count"></span>
+                </h3>
+                <button id="add-player-btn" class="count-btn add" title="Ajouter un joueur">+</button>
             </div>
-            <div class="modal-buttons">
+            <ul class="player-name-inputs" id="player-name-list"></ul>
+            <div class="modal-buttons spread">
+                <button id="reset-names-btn" class="modal-btn secondary alert" title="Réinitialiser les noms">Reset names</button>
                 <button id="save-names-btn" class="modal-btn primary">OK</button>
             </div>
         `;
     }
 
     /**
-     * Configure les inputs des noms de joueurs
-     * @param {HTMLElement} modalContent - Contenu du modal
+     * Affiche les lignes des joueurs du brouillon et met à jour l'en-tête
      */
-    function setupPlayerNameInputs(modalContent) {
-        for (let i = 0; i < gameState.playerCount; i++) {
-            const input = modalContent.querySelector(`#player-name-${i}`);
-            if (!input) continue;
+    function renderPlayerRows() {
+        const list = document.getElementById('player-name-list');
+        if (!list || !playerDraft) return;
 
-            const defaultValue = `Joueur ${i + 1}`;
-            
-            // Style initial
-            if (input.value === defaultValue) {
-                input.style.color = '#999';
-            }
+        list.innerHTML = '';
+        playerDraft.entries.slice(0, playerDraft.count).forEach(entry => {
+            const li = document.createElement('li');
+            li.className = 'player-name-row';
+            li.innerHTML = `
+                <span class="drag-handle" title="Déplacer"><span></span><span></span></span>
+                <input type="text" autocomplete="off">
+                <button class="count-btn remove" title="Retirer ce joueur">-</button>
+            `;
+            const input = li.querySelector('input');
+            input.value = entry.name;
+            input.addEventListener('input', () => { entry.name = input.value; });
+            const removeBtn = li.querySelector('.count-btn.remove');
+            removeBtn.disabled = playerDraft.count <= 1;
+            removeBtn.addEventListener('click', () => removeDraftPlayer(entry));
+            li._entry = entry;
+            setupRowDrag(li, list);
+            list.appendChild(li);
+        });
 
-            // Fonctions de gestion
-            const clearIfDefault = () => {
-                if (input.value === defaultValue) {
-                    input.value = '';
-                    input.style.color = '';
-                }
-            };
-            
-            const restoreIfEmpty = () => {
-                if (input.value.trim() === '') {
-                    input.value = defaultValue;
-                    input.style.color = '#999';
-                } else {
-                    input.style.color = '';
-                }
-            };
+        updatePlayerRowPlaceholders();
 
-            // Événements
-            input.addEventListener('focus', clearIfDefault);
-            input.addEventListener('click', clearIfDefault);
-            input.addEventListener('blur', restoreIfEmpty);
-            
-            input.addEventListener('keydown', (e) => {
-                if (input.value === defaultValue) {
-                    setTimeout(() => {
-                        if (input.value !== defaultValue) {
-                            input.style.color = '';
-                        }
-                    }, 0);
-                }
-            });
-        }
+        const count = playerDraft.count;
+        document.getElementById('player-modal-count').textContent = formatPlayerCount(count, true);
+        document.getElementById('add-player-btn').disabled = count >= CONFIG.MAX_PLAYERS;
     }
 
     /**
-     * Sauvegarde les noms des joueurs
+     * Numérote les placeholders selon la position de chaque ligne
+     */
+    function updatePlayerRowPlaceholders() {
+        const list = document.getElementById('player-name-list');
+        if (!list) return;
+        Array.from(list.children).forEach((li, i) => {
+            li.querySelector('input').placeholder = `Joueur ${i + 1}`;
+        });
+    }
+
+    /**
+     * Ajoute un joueur dans le brouillon (réaffiche le premier joueur masqué)
+     */
+    function addDraftPlayer() {
+        if (playerDraft.count >= CONFIG.MAX_PLAYERS) return;
+        playerDraft.count++;
+        renderPlayerRows();
+    }
+
+    /**
+     * Retire un joueur du brouillon : il devient le premier joueur masqué
+     * (son nom est conservé et revient au prochain "+")
+     * @param {Object} entry - Entrée du joueur à retirer
+     */
+    function removeDraftPlayer(entry) {
+        if (playerDraft.count <= 1) return;
+        const entries = playerDraft.entries;
+        entries.splice(entries.indexOf(entry), 1);
+        playerDraft.count--;
+        entries.splice(playerDraft.count, 0, entry);
+        renderPlayerRows();
+    }
+
+    /**
+     * Rend une ligne déplaçable via sa poignée (souris et tactile)
+     * @param {HTMLElement} row - Ligne du joueur
+     * @param {HTMLElement} list - Liste parente
+     */
+    function setupRowDrag(row, list) {
+        const handle = row.querySelector('.drag-handle');
+        let startY = 0;
+        let pointerId = null;
+
+        const onMove = (e) => {
+            if (e.pointerId !== pointerId) return;
+            e.preventDefault();
+
+            const offset = () => e.clientY - startY;
+            row.style.transform = `translateY(${offset()}px)`;
+
+            // Échanger avec la ligne voisine quand on dépasse son milieu
+            const rect = row.getBoundingClientRect();
+            const center = rect.top + rect.height / 2;
+            const prev = row.previousElementSibling;
+            const next = row.nextElementSibling;
+            const oldTop = row.offsetTop;
+
+            if (next) {
+                const r = next.getBoundingClientRect();
+                if (center > r.top + r.height / 2) list.insertBefore(next, row);
+            }
+            if (prev && row.offsetTop === oldTop) {
+                const r = prev.getBoundingClientRect();
+                if (center < r.top + r.height / 2) list.insertBefore(row, prev);
+            }
+
+            if (row.offsetTop !== oldTop) {
+                startY += row.offsetTop - oldTop;
+                row.style.transform = `translateY(${offset()}px)`;
+                updatePlayerRowPlaceholders();
+            }
+        };
+
+        const onEnd = (e) => {
+            if (e.pointerId !== pointerId) return;
+            pointerId = null;
+            row.classList.remove('dragging');
+            row.style.transform = '';
+            handle.removeEventListener('pointermove', onMove);
+            handle.removeEventListener('pointerup', onEnd);
+            handle.removeEventListener('pointercancel', onEnd);
+
+            // Nouvel ordre : lignes visibles puis joueurs masqués
+            const visible = Array.from(list.children).map(li => li._entry);
+            const hidden = playerDraft.entries.filter(entry => !visible.includes(entry));
+            playerDraft.entries = visible.concat(hidden);
+        };
+
+        handle.addEventListener('pointerdown', (e) => {
+            if (pointerId !== null) return;
+            e.preventDefault();
+            pointerId = e.pointerId;
+            startY = e.clientY;
+            handle.setPointerCapture(pointerId);
+            row.classList.add('dragging');
+            handle.addEventListener('pointermove', onMove);
+            handle.addEventListener('pointerup', onEnd);
+            handle.addEventListener('pointercancel', onEnd);
+        });
+    }
+
+    /**
+     * Applique le brouillon : ordre, noms et nombre de joueurs
      */
     function savePlayerNames() {
-        for (let i = 0; i < gameState.playerCount; i++) {
-            const input = document.getElementById(`player-name-${i}`);
-            if (!input) continue;
+        if (!playerDraft) return;
 
-            const value = input.value.trim();
-            const defaultValue = `Joueur ${i + 1}`;
-            
-            gameState.players[i].name = value && value !== defaultValue ? value : defaultValue;
-        }
-        
-        updateTabBar();
-        saveSettings();
+        const currentPlayer = gameState.players[gameState.currentPlayerIndex];
+
+        gameState.players = playerDraft.entries.map((entry, i) => {
+            entry.player.id = i + 1;
+            entry.player.name = entry.name.trim() || `Joueur ${i + 1}`;
+            return entry.player;
+        });
+
+        // Rester sur le même joueur après réordonnancement
+        gameState.currentPlayerIndex = Math.max(0, gameState.players.indexOf(currentPlayer));
+        const count = playerDraft.count;
+        playerDraft = null;
+
+        setPlayerCount(count);
         closeModal();
     }
-    
+
     /**
-     * Remet les noms par défaut
+     * Efface les noms saisis (les placeholders "Joueur N" restent)
      */
     function resetPlayerNames() {
-        for (let i = 0; i < gameState.playerCount; i++) {
-            const input = document.getElementById(`player-name-${i}`);
-            if (input) {
-                input.value = `Joueur ${i + 1}`;
-                input.style.color = '#999';
-                gameState.players[i].name = `Joueur ${i + 1}`;
-            }
-        }
+        if (!playerDraft) return;
+        playerDraft.entries.forEach(entry => { entry.name = ''; });
+        renderPlayerRows();
     }
 
     /**
@@ -1274,6 +1355,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (modalBackdrop) {
             modalBackdrop.style.display = 'none';
         }
+    }
+
+    /**
+     * Indique si le modal est ouvert
+     * @returns {boolean} True si ouvert
+     */
+    function isModalOpen() {
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        return !!modalBackdrop && modalBackdrop.style.display === 'flex';
     }
 
     /* ========================================
@@ -1424,7 +1514,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateUIWithSettings() {
         const playerCountText = document.getElementById('player-count-text');
         if (playerCountText) {
-            playerCountText.textContent = `${gameState.playerCount} joueur${gameState.playerCount > 1 ? 's' : ''}`;
+            playerCountText.textContent = formatPlayerCount(gameState.playerCount);
         }
         
         togglePlayerNavigation(gameState.playerCount > 1);

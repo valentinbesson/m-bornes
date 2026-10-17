@@ -1,4 +1,4 @@
-const CACHE_NAME = 'm-bornes-v1.3.3';
+const CACHE_NAME = 'm-bornes-v1.3.6';
 const urlsToCache = [
   '.',
   './index.html',
